@@ -10,10 +10,31 @@ pub fn build(b: *std.Build) void {
     const odbc_mod = b.addModule("odbc", .{
         .root_source_file = .{ .path = "src/odbc/root.zig" },
     });
+    const core_mod = b.addModule("core", .{
+        .root_source_file = .{ .path = "src/core/root.zig" },
+        .imports = &.{
+            .{ .name = "odbc", .module = odbc_mod },
+        },
+    });
+    const pool_mod = b.addModule("pool", .{
+        .root_source_file = .{ .path = "src/pool/root.zig" },
+        .imports = &.{
+            .{ .name = "core", .module = core_mod },
+        },
+    });
+    const testing_mod = b.addModule("testing", .{
+        .root_source_file = .{ .path = "src/testing/root.zig" },
+        .imports = &.{
+            .{ .name = "core", .module = core_mod },
+        },
+    });
     const zodbc_mod = b.addModule("zodbc", .{
         .root_source_file = .{ .path = "src/root.zig" },
         .imports = &.{
             .{ .name = "odbc", .module = odbc_mod },
+            .{ .name = "core", .module = core_mod },
+            .{ .name = "pool", .module = pool_mod },
+            .{ .name = "testing", .module = testing_mod },
         },
     });
 
@@ -27,7 +48,9 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    lib.root_module.addImport("odbc", odbc_mod);
+    // lib.root_module.addImport("odbc", odbc_mod);
+    // lib.root_module.addImport("core", core_mod);
+    // lib.root_module.addImport("pool", pool_mod);
     lib.linkage = .dynamic;
     lib.linkLibC();
     lib.linkSystemLibrary("odbc");
@@ -60,6 +83,30 @@ pub fn build(b: *std.Build) void {
     // ----------------------------
     // Tests
     // ----------------------------
+    const lib_core_unit_tests = b.addTest(.{
+        .name = "[LIB CORE UNIT]",
+        .test_runner = "test_runner.zig",
+        .root_source_file = .{ .path = "src/core/test_unit.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
+    lib_core_unit_tests.root_module.addImport("odbc", odbc_mod);
+    lib_core_unit_tests.linkLibC();
+    lib_core_unit_tests.linkSystemLibrary("odbc");
+    const run_lib_core_unit_tests = b.addRunArtifact(lib_core_unit_tests);
+
+    const lib_pool_unit_tests = b.addTest(.{
+        .name = "[LIB POOL UNIT]",
+        .test_runner = "test_runner.zig",
+        .root_source_file = .{ .path = "src/pool/test_unit.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
+    lib_pool_unit_tests.root_module.addImport("odbc", odbc_mod);
+    lib_pool_unit_tests.linkLibC();
+    lib_pool_unit_tests.linkSystemLibrary("odbc");
+    const run_lib_pool_unit_tests = b.addRunArtifact(lib_pool_unit_tests);
+
     const lib_unit_tests = b.addTest(.{
         .name = "[LIB UNIT]",
         .test_runner = "test_runner.zig",
@@ -81,6 +128,8 @@ pub fn build(b: *std.Build) void {
     const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
 
     const test_unit_step = b.step("test:unit", "Run unit tests");
+    test_unit_step.dependOn(&run_lib_core_unit_tests.step);
+    test_unit_step.dependOn(&run_lib_pool_unit_tests.step);
     test_unit_step.dependOn(&run_lib_unit_tests.step);
     test_unit_step.dependOn(&run_exe_unit_tests.step);
 
@@ -92,7 +141,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    db2_integration_tests.root_module.addImport("odbc", odbc_mod);
+    // db2_integration_tests.root_module.addImport("odbc", odbc_mod);
     db2_integration_tests.root_module.addImport("zodbc", zodbc_mod);
     db2_integration_tests.linkLibC();
     db2_integration_tests.linkSystemLibrary("odbc");
@@ -108,7 +157,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    mariadb_integration_tests.root_module.addImport("odbc", odbc_mod);
+    // mariadb_integration_tests.root_module.addImport("odbc", odbc_mod);
     mariadb_integration_tests.root_module.addImport("zodbc", zodbc_mod);
     mariadb_integration_tests.linkLibC();
     mariadb_integration_tests.linkSystemLibrary("odbc");
@@ -124,7 +173,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    postgres_integration_tests.root_module.addImport("odbc", odbc_mod);
+    // postgres_integration_tests.root_module.addImport("odbc", odbc_mod);
     postgres_integration_tests.root_module.addImport("zodbc", zodbc_mod);
     postgres_integration_tests.linkLibC();
     postgres_integration_tests.linkSystemLibrary("odbc");

@@ -67,6 +67,32 @@ pub fn SQLDriverConnect(
     return @enumFromInt(return_code);
 }
 
+pub fn SQLColumns(
+    handle: ?*anyopaque,
+    catalog_name: []const u8,
+    schema_name: []const u8,
+    table_name: []const u8,
+    column_name: []const u8,
+) rc.ColumnsRC {
+    var catalog_name_len: c_short = 0;
+    if (!std.mem.eql(u8, catalog_name, "%")) {
+        catalog_name_len = @intCast(catalog_name.len);
+    }
+
+    const return_code = c.SQLColumns(
+        handle,
+        @ptrCast(@constCast(catalog_name)),
+        catalog_name_len,
+        @ptrCast(@constCast(schema_name)),
+        @intCast(schema_name.len),
+        @ptrCast(@constCast(table_name)),
+        @intCast(table_name.len),
+        @ptrCast(@constCast(column_name)),
+        @intCast(column_name.len),
+    );
+    return @enumFromInt(return_code);
+}
+
 pub fn SQLPrepare(
     handle: ?*anyopaque,
     stmt_str: []const u8,
@@ -98,8 +124,8 @@ pub fn SQLDescribeCol(
     const return_code = c.SQLDescribeCol(
         handle,
         @intCast(col_number),
-        col_desc.name_buf[0..],
-        col_desc.name_buf.len,
+        @ptrCast(col_desc.name_buf),
+        col_desc.name_buf_len,
         @ptrCast(&col_desc.name_buf_len),
         @ptrCast(&col_desc.data_type),
         @ptrCast(@alignCast(&col_desc.column_size)),
@@ -109,10 +135,31 @@ pub fn SQLDescribeCol(
     return @enumFromInt(return_code);
 }
 
+pub fn SQLBindCol(
+    handle: ?*anyopaque,
+    col_number: c_ushort,
+    col: *types.Column,
+) rc.BindColRC {
+    const return_code = c.SQLBindCol(
+        handle,
+        @intCast(col_number),
+        @intFromEnum(col.c_data_type),
+        @ptrCast(col.buffer),
+        @intCast(col.buffer.len),
+        @ptrCast(&col.str_len_or_ind),
+    );
+    return @enumFromInt(return_code);
+}
+
 pub fn SQLExecute(
     handle: ?*anyopaque,
 ) rc.ExecuteRC {
     const return_code = c.SQLExecute(handle);
+    return @enumFromInt(return_code);
+}
+
+pub fn SQLFetch(handle: ?*anyopaque) rc.FetchRC {
+    const return_code = c.SQLFetch(handle);
     return @enumFromInt(return_code);
 }
 

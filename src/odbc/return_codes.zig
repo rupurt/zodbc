@@ -44,6 +44,13 @@ pub const SetStatementAttrRC = enum(c.SQLRETURN) {
     ERR = c.SQL_ERROR,
 };
 
+pub const ColumnsRC = enum(c_short) {
+    SUCCESS = c.SQL_SUCCESS,
+    SUCCESS_WITH_INFO = c.SQL_SUCCESS_WITH_INFO,
+    ERR = c.SQL_ERROR,
+    INVALID_HANDLE = c.SQL_INVALID_HANDLE,
+};
+
 pub const PrepareRC = enum(c_short) {
     SUCCESS = c.SQL_SUCCESS,
     SUCCESS_WITH_INFO = c.SQL_SUCCESS_WITH_INFO,
@@ -67,12 +74,26 @@ pub const DescribeColRC = enum(c_short) {
     // STILL_EXECUTING = c.SQL_STILL_EXECUTING,
 };
 
+pub const BindColRC = enum(c_short) {
+    SUCCESS = c.SQL_SUCCESS,
+    ERR = c.SQL_ERROR,
+    INVALID_HANDLE = c.SQL_INVALID_HANDLE,
+};
+
 pub const ExecuteRC = enum(c_short) {
     SUCCESS = c.SQL_SUCCESS,
     SUCCESS_WITH_INFO = c.SQL_SUCCESS_WITH_INFO,
     ERR = c.SQL_ERROR,
     INVALID_HANDLE = c.SQL_INVALID_HANDLE,
     NEED_DATA = c.SQL_NEED_DATA,
+    NO_DATA_FOUND = c.SQL_NO_DATA_FOUND,
+};
+
+pub const FetchRC = enum(c_short) {
+    SUCCESS = c.SQL_SUCCESS,
+    SUCCESS_WITH_INFO = c.SQL_SUCCESS_WITH_INFO,
+    ERR = c.SQL_ERROR,
+    INVALID_HANDLE = c.SQL_INVALID_HANDLE,
     NO_DATA_FOUND = c.SQL_NO_DATA_FOUND,
 };
 
