@@ -9,6 +9,6 @@ pub const Connection = core.Connection;
 pub const Statement = core.Statement;
 
 const pool = @import("pool");
-pub const ConnectionPool = pool.ConnectionPool;
+pub const WorkerPool = pool.WorkerPool;
 
 pub const testing = @import("testing");

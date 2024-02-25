@@ -28,6 +28,7 @@ pub fn build(b: *std.Build) void {
         .root_source_file = .{ .path = "src/pool/root.zig" },
         .imports = &.{
             .{ .name = "core", .module = core_mod },
+            .{ .name = "odbc", .module = odbc_mod },
         },
     });
     const testing_mod = b.addModule("testing", .{

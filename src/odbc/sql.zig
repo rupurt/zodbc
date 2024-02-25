@@ -107,7 +107,7 @@ pub fn SQLPrepare(
 
 pub fn SQLNumResultCols(
     handle: ?*anyopaque,
-    column_count: *i32,
+    column_count: *usize,
 ) rc.NumResultColsRC {
     const return_code = c.SQLNumResultCols(
         handle,
@@ -118,14 +118,14 @@ pub fn SQLNumResultCols(
 
 pub fn SQLDescribeCol(
     handle: ?*anyopaque,
-    col_number: c_ushort,
+    col_number: usize,
     col_desc: *types.ColDescription,
 ) rc.DescribeColRC {
     const return_code = c.SQLDescribeCol(
         handle,
         @intCast(col_number),
         @ptrCast(col_desc.name_buf),
-        col_desc.name_buf_len,
+        @intCast(col_desc.name_buf_len),
         @ptrCast(&col_desc.name_buf_len),
         @ptrCast(&col_desc.data_type),
         @ptrCast(@alignCast(&col_desc.column_size)),

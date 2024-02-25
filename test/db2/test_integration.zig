@@ -15,5 +15,5 @@ comptime {
     _ = @import("test_statement_procedure_columns.zig");
     _ = @import("test_statement_execute_direct_and_fetch.zig");
     _ = @import("test_statement_prepare_execute_bind_col_and_fetch.zig");
-    _ = @import("test_connection_pool_prepare_execute_and_read_batches.zig");
+    _ = @import("test_worker_pool_prepare_execute_and_read_batches.zig");
 }

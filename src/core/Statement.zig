@@ -128,8 +128,8 @@ pub fn prepare(self: Self, stmt_str: []const u8) !void {
     };
 }
 
-pub fn numResultCols(self: Self) !i32 {
-    var column_count: i32 = 0;
+pub fn numResultCols(self: Self) !usize {
+    var column_count: usize = 0;
     return switch (sql.SQLNumResultCols(self.handle(), &column_count)) {
         .SUCCESS => column_count,
         .ERR => NumResultColsError.Error,
@@ -140,7 +140,7 @@ pub fn numResultCols(self: Self) !i32 {
 
 pub fn describeCol(
     self: Self,
-    col_number: c_ushort,
+    col_number: usize,
     col_desc: *types.ColDescription,
 ) !void {
     switch (sql.SQLDescribeCol(

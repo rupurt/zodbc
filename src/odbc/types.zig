@@ -119,7 +119,7 @@ pub const ColDescription = struct {
 
     allocator: std.mem.Allocator,
     name_buf: []u8,
-    name_buf_len: c_short,
+    name_buf_len: usize,
     data_type: c_short,
     column_size: u32,
     decimal_digits: c_short,

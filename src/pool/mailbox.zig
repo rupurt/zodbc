@@ -1,4 +1,5 @@
 const std = @import("std");
+const Mutex = std.Thread.Mutex;
 const Semaphore = std.Thread.Semaphore;
 
 pub fn Mailbox(comptime T: type) type {
@@ -6,6 +7,7 @@ pub fn Mailbox(comptime T: type) type {
         const Self = @This();
         const MessageList = std.DoublyLinkedList(T);
 
+        mut: Mutex = .{},
         sem: Semaphore = .{},
         allocator: std.mem.Allocator,
         messages: MessageList,
@@ -31,12 +33,16 @@ pub fn Mailbox(comptime T: type) type {
         pub fn post(self: *Self, message: T) !void {
             const node = try self.allocator.create(MessageList.Node);
             node.* = .{ .data = message };
+            self.mut.lock();
             self.messages.append(node);
+            self.mut.unlock();
             self.sem.post();
         }
 
         pub fn dequeue(self: *Self) T {
+            self.mut.lock();
             const node = self.messages.popFirst();
+            self.mut.unlock();
             if (node == null) {
                 self.sem.wait();
                 return self.dequeue();

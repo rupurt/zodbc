@@ -1,1 +1,1 @@
-pub const ConnectionPool = @import("ConnectionPool.zig");
+pub const WorkerPool = @import("WorkerPool.zig");

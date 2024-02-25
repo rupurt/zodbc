@@ -28,21 +28,22 @@ pub const Worker = ThreadWorker(
                 .execute => handleExecute(msg, ctx),
                 .executeDirect => handleExecuteDirect(msg, ctx),
                 .setPos => handleSetPos(msg, ctx),
+                .fetchScroll => handleFetchScroll(msg, ctx),
             };
         }
 
         inline fn handleJoin() HandleResult(ParentMessage) {
-            std.debug.print("Worker#handleJoin/2\n", .{});
+            // std.debug.print("Worker#handleJoin/2\n", .{});
             return .{ .stop = .{} };
         }
 
         inline fn handlePing() HandleResult(ParentMessage) {
-            std.debug.print("Worker#handlePing/2\n", .{});
+            // std.debug.print("Worker#handlePing/2\n", .{});
             return .{ .reply = .{ .pong = .{} } };
         }
 
         inline fn handleConnectWithString(msg: Message, ctx: *Context) HandleResult(ParentMessage) {
-            std.debug.print("Worker#handleConnectWithString/2\n", .{});
+            // std.debug.print("Worker#handleConnectWithString/2\n", .{});
             ctx.con = Connection.init(msg.connect.env) catch |err| {
                 std.debug.print("error creating connection: {any}\n", .{err});
                 return .{ .stop = .{} };
@@ -57,21 +58,21 @@ pub const Worker = ThreadWorker(
         inline fn handleDisconnect(msg: Message, ctx: *Context) HandleResult(ParentMessage) {
             _ = ctx;
             _ = msg;
-            std.debug.print("Worker#handleDisconnect/2\n", .{});
+            // std.debug.print("Worker#handleDisconnect/2\n", .{});
             return .{ .reply = .{ .disconnect = .{} } };
         }
 
         inline fn handleCancel(msg: Message, ctx: *Context) HandleResult(ParentMessage) {
             _ = ctx;
             _ = msg;
-            std.debug.print("Worker#handleCancel/2\n", .{});
+            // std.debug.print("Worker#handleCancel/2\n", .{});
             return .{
                 .reply = .{ .cancel = .{} },
             };
         }
 
         inline fn handlePrepare(msg: Message, ctx: *Context) HandleResult(ParentMessage) {
-            std.debug.print("Worker#handlePrepare/2\n", .{});
+            // std.debug.print("Worker#handlePrepare/2\n", .{});
             ctx.stmt = Statement.init(ctx.con.?) catch |err| {
                 std.debug.print("error creating statement: {any}\n", .{err});
                 return .{ .stop = .{} };
@@ -85,7 +86,7 @@ pub const Worker = ThreadWorker(
 
         inline fn handleExecute(msg: Message, ctx: *Context) HandleResult(ParentMessage) {
             _ = msg;
-            std.debug.print("Worker#handleExecute/2\n", .{});
+            // std.debug.print("Worker#handleExecute/2\n", .{});
             ctx.stmt.?.execute() catch |err| {
                 std.debug.print("error executing statement: {any}\n", .{err});
                 return .{ .stop = .{} };
@@ -96,7 +97,7 @@ pub const Worker = ThreadWorker(
         inline fn handleExecuteDirect(msg: Message, ctx: *Context) HandleResult(ParentMessage) {
             _ = ctx;
             _ = msg;
-            std.debug.print("Worker#handleExecuteDirect/2\n", .{});
+            // std.debug.print("Worker#handleExecuteDirect/2\n", .{});
             return .{ .reply = .{ .execute = .{} } };
         }
 
@@ -105,6 +106,13 @@ pub const Worker = ThreadWorker(
             _ = msg;
             std.debug.print("Worker#handleSetPos/2\n", .{});
             return .{ .reply = .{ .setPos = .{} } };
+        }
+
+        inline fn handleFetchScroll(msg: Message, ctx: *Context) HandleResult(ParentMessage) {
+            _ = ctx;
+            _ = msg;
+            std.debug.print("Worker#handleFetchScroll/2\n", .{});
+            return .{ .reply = .{ .fetchScroll = .{} } };
         }
     },
 );
@@ -133,6 +141,7 @@ const Message = union(MessageType) {
     setPos: struct {
         offset: usize,
     },
+    fetchScroll: struct {},
 };
 const MessageType = enum {
     join,
@@ -144,4 +153,5 @@ const MessageType = enum {
     execute,
     executeDirect,
     setPos,
+    fetchScroll,
 };

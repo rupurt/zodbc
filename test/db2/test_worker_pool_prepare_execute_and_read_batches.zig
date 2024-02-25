@@ -9,12 +9,12 @@ test "can execute a prepared statement and fetch a cursor" {
     const env = try zodbc.testing.environment();
     defer env.deinit();
 
-    var con_pool = try zodbc.ConnectionPool.init(
+    var pool = try zodbc.WorkerPool.init(
         allocator,
         env,
         .{ .n_workers = 2 },
     );
-    defer con_pool.deinit();
+    defer pool.deinit();
     const con_str = try std.fmt.allocPrint(
         allocator,
         "Driver={s};Hostname={s};Database={s};Port={d};Uid={s};Pwd={s};",
@@ -28,14 +28,14 @@ test "can execute a prepared statement and fetch a cursor" {
         },
     );
     defer allocator.free(con_str);
-    try con_pool.connectWithString(con_str);
+    try pool.connectWithString(con_str);
 
-    try con_pool.prepare("SELECT * FROM SYSIBM.SYSTABLES");
-    try con_pool.execute();
+    try pool.prepare("SELECT * FROM SYSIBM.SYSTABLES");
+    try pool.execute();
 
-    // const reader = con_pool.batchReader();
+    // const reader = pool.batchReader();
     // var n_rows: usize = 0;
-    // for (reader.items()) |rowset| {
+    // while (reader.next()) |rowset| {
     //     for (rowset.items()) |row| {
     //         n_rows += 1;
     //         try testing.expectEqualStrings("", row[0].name);
