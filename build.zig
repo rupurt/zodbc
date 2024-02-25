@@ -5,6 +5,14 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     // ----------------------------
+    // Dependencies
+    // ----------------------------
+    const zig_cli_dep = b.dependency("zig-cli", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // ----------------------------
     // Module
     // ----------------------------
     const odbc_mod = b.addModule("odbc", .{
@@ -29,12 +37,19 @@ pub fn build(b: *std.Build) void {
         },
     });
     const zodbc_mod = b.addModule("zodbc", .{
-        .root_source_file = .{ .path = "src/root.zig" },
+        .root_source_file = .{ .path = "src/lib.zig" },
         .imports = &.{
             .{ .name = "odbc", .module = odbc_mod },
             .{ .name = "core", .module = core_mod },
             .{ .name = "pool", .module = pool_mod },
             .{ .name = "testing", .module = testing_mod },
+        },
+    });
+    const cli_mod = b.addModule("cli", .{
+        .root_source_file = .{ .path = "src/cli/root.zig" },
+        .imports = &.{
+            .{ .name = "zodbc", .module = zodbc_mod },
+            .{ .name = "zig-cli", .module = zig_cli_dep.module("zig-cli") },
         },
     });
 
@@ -43,7 +58,7 @@ pub fn build(b: *std.Build) void {
     // ----------------------------
     const lib = b.addSharedLibrary(.{
         .name = "zodbc",
-        .root_source_file = .{ .path = "src/root.zig" },
+        .root_source_file = .{ .path = "src/lib.zig" },
         .version = .{ .major = 0, .minor = 0, .patch = 0 },
         .target = target,
         .optimize = optimize,
@@ -66,7 +81,12 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe.linkLibrary(lib);
+    // exe.root_module.addImport("zig-cli", zig_cli_dep.module("zig-cli"));
+    exe.root_module.addImport("cli", cli_mod);
+    // exe.linkLibrary(lib);
+    exe.linkLibC();
+    exe.linkSystemLibrary("odbc");
+    exe.linkSystemLibrary("arrow");
     b.installArtifact(exe);
 
     // ----------------------------
@@ -110,7 +130,7 @@ pub fn build(b: *std.Build) void {
     const lib_unit_tests = b.addTest(.{
         .name = "[LIB UNIT]",
         .test_runner = "test_runner.zig",
-        .root_source_file = .{ .path = "src/root.zig" },
+        .root_source_file = .{ .path = "src/lib.zig" },
         .target = target,
         .optimize = optimize,
     });

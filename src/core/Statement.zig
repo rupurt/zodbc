@@ -72,7 +72,7 @@ pub fn columns(
     };
 }
 
-pub fn columnPrivleges(self: Self) !void {
+pub fn columnPrivileges(self: Self) !void {
     _ = self;
 }
 
