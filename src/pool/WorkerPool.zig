@@ -5,6 +5,7 @@ const Environment = core.Environment;
 const Connection = core.Connection;
 const Statement = core.Statement;
 const Rowset = core.Rowset;
+
 const odbc = @import("odbc");
 const types = odbc.types;
 
@@ -123,10 +124,10 @@ const WorkerBatchReader = struct {
     stmt: *Statement,
     workers: *WorkerList,
     mailbox: *ParentMailbox,
-    fetch_array_size: usize,
-    offset: usize,
     column_descriptions: []types.ColDescription,
     rowsets: []Rowset,
+    fetch_array_size: usize,
+    offset: usize,
     has_more_results: bool,
 
     pub fn init(
@@ -145,7 +146,7 @@ const WorkerBatchReader = struct {
         }
         const rowsets = try allocator.alloc(Rowset, workers.items.len);
         for (0..rowsets.len) |i| {
-            const rowset = Rowset.init(column_descriptions);
+            const rowset = try Rowset.init(allocator, column_descriptions, fetch_array_size);
             rowsets[i] = rowset;
         }
 
@@ -154,9 +155,9 @@ const WorkerBatchReader = struct {
             .stmt = stmt,
             .workers = workers,
             .mailbox = mailbox,
-            .fetch_array_size = fetch_array_size,
             .column_descriptions = column_descriptions,
             .rowsets = rowsets,
+            .fetch_array_size = fetch_array_size,
             .offset = 0,
             .has_more_results = true,
         };
@@ -168,13 +169,6 @@ const WorkerBatchReader = struct {
     }
 
     pub fn next(self: *WorkerBatchReader) ?Rowset {
-        // if (self.offset == 0) {
-        //     self.offset += self.fetch_array_size;
-        //     return self.rowsets[0];
-        // } else {
-        //     return null;
-        // }
-
         var rowset: ?Rowset = null;
 
         while (self.has_more_results) {
@@ -182,6 +176,18 @@ const WorkerBatchReader = struct {
                 self.offset += self.fetch_array_size;
                 self.has_more_results = false;
                 rowset = self.rowsets[0];
+            }
+            for (self.workers.items) |*worker| {
+                worker.post(.{
+                    .fetchScroll = .{
+                        // .orientation = .ABSOLUTE,
+                        .orientation = .NEXT,
+                        .offset = self.offset,
+                    },
+                }) catch {
+                    std.debug.print("WorkerBatchReader.next: worker.post failed\n", .{});
+                };
+                self.offset += self.fetch_array_size;
             }
         }
 

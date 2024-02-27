@@ -30,9 +30,24 @@ pub fn SQLFreeHandle(
     return @enumFromInt(return_code);
 }
 
+// pub fn SQLGetEnvAttr(
+//     handle: ?*anyopaque,
+//     attribute: types.EnvAttrAttribute,
+//     value: *anyopaque,
+//     str_len: c_int,
+// ) rc.GetEnvAttrRC {
+//     const return_code = c.SQLGetEnvAttr(
+//         handle,
+//         @intFromEnum(attribute),
+//         value,
+//         str_len,
+//     );
+//     return @enumFromInt(return_code);
+// }
+
 pub fn SQLSetEnvAttr(
     handle: ?*anyopaque,
-    attribute: types.SetEnvAttrAttribute,
+    attribute: types.EnvAttrAttribute,
     value: *anyopaque,
     str_len: c_int,
 ) rc.SetEnvAttrRC {
@@ -41,6 +56,42 @@ pub fn SQLSetEnvAttr(
         @intFromEnum(attribute),
         value,
         str_len,
+    );
+    return @enumFromInt(return_code);
+}
+
+pub fn SQLGetConnectAttr(
+    handle: ?*anyopaque,
+    attr: types.ConnectAttrAttribute,
+    value: *anyopaque,
+    buffer_len: isize,
+    str_len: c_int,
+) rc.GetConnectAttrRC {
+    const return_code = c.SQLGetConnectAttr(
+        handle,
+        @intFromEnum(attr),
+        @ptrCast(value),
+        @intCast(buffer_len),
+        str_len,
+    );
+    return @enumFromInt(return_code);
+}
+
+pub fn SQLSetConnectAttr(
+    handle: ?*anyopaque,
+    attr: types.ConnectAttrAttribute,
+    value: *anyopaque,
+) rc.SetConnectAttrRC {
+    // var val: i32 = 0;
+    // _ = val;
+    std.debug.print("SQLSetConnectAttr attr int={d}\n", .{@intFromEnum(attr)});
+    const return_code = c.SQLSetConnectAttr(
+        handle,
+        @intFromEnum(attr),
+        value,
+        // @ptrCast(&val),
+        // @intCast(str_len),
+        c.SQL_NTS,
     );
     return @enumFromInt(return_code);
 }
@@ -89,6 +140,62 @@ pub fn SQLColumns(
         @intCast(table_name.len),
         @ptrCast(@constCast(column_name)),
         @intCast(column_name.len),
+    );
+    return @enumFromInt(return_code);
+}
+
+pub fn SQLGetStmtAttr(
+    handle: ?*anyopaque,
+    attr: types.StmtAttrAttribute,
+    value: *anyopaque,
+    buffer_len: isize,
+    str_len: ?*isize,
+) rc.GetStmtAttrRC {
+    _ = str_len;
+    _ = buffer_len;
+    _ = value;
+    // var val: c_int = 0;
+    // _ = val;
+    var result_buffer: [100]u8 = undefined;
+    var string_length_result: c_int = 0;
+    const return_code = c.SQLGetStmtAttr(
+        handle,
+        @intFromEnum(attr),
+        // @ptrCast(value),
+        // @ptrCast(&val),
+        // @as(*anyopaque, @ptrCast(&result_buffer)),
+        @ptrCast(&result_buffer),
+        // @intCast(buffer_len),
+        @intCast(result_buffer.len),
+        // @ptrCast(str_len),
+        @ptrCast(&string_length_result),
+    );
+    // std.debug.print("SQLGetStmtAttr val={}\n", .{val});
+    std.debug.print("SQLGetStmtAttr result_buffer={s}\n", .{result_buffer});
+    std.debug.print("SQLGetStmtAttr string_length_result={d}\n", .{string_length_result});
+    // const foo: []u8 = result_buffer[0..@intCast(string_length_result)];
+    const foo: isize = std.mem.bytesToValue(isize, result_buffer[0..3]);
+    std.debug.print("SQLGetStmtAttr cast={any}\n", .{foo});
+    return @enumFromInt(return_code);
+}
+
+pub fn SQLSetStmtAttr(
+    handle: ?*anyopaque,
+    attr: types.StmtAttrAttribute,
+    value: *anyopaque,
+    str_len: isize,
+) rc.SetStmtAttrRC {
+    _ = str_len;
+    _ = value;
+    var val: c_int = 100;
+    const return_code = c.SQLSetStmtAttr(
+        handle,
+        @intFromEnum(attr),
+        // @ptrCast(value),
+        @ptrCast(&val),
+        // @ptrFromInt(val),
+        // @intCast(str_len),
+        0,
     );
     return @enumFromInt(return_code);
 }
@@ -151,10 +258,51 @@ pub fn SQLBindCol(
     return @enumFromInt(return_code);
 }
 
-pub fn SQLExecute(
+pub fn SQLSetPos(
     handle: ?*anyopaque,
-) rc.ExecuteRC {
+    offset: usize,
+    operation: types.SetPosOperation,
+    lock: types.Lock,
+) rc.SetPosRC {
+    const return_code = c.SQLSetPos(
+        handle,
+        offset,
+        @intFromEnum(operation),
+        @intFromEnum(lock),
+    );
+    return @enumFromInt(return_code);
+}
+
+pub fn SQLExecute(handle: ?*anyopaque) rc.ExecuteRC {
     const return_code = c.SQLExecute(handle);
+    return @enumFromInt(return_code);
+}
+
+pub fn SQLExecDirect(
+    handle: ?*anyopaque,
+    stmt_str: []const u8,
+) rc.ExecDirectRC {
+    const return_code = c.SQLExecDirect(
+        handle,
+        @ptrCast(@constCast(stmt_str)),
+        @intCast(stmt_str.len),
+    );
+    return @enumFromInt(return_code);
+}
+
+pub fn SQLRowCount(
+    handle: ?*anyopaque,
+    row_count: *isize,
+) rc.RowCountRC {
+    const return_code = c.SQLRowCount(
+        handle,
+        @ptrCast(row_count),
+    );
+    return @enumFromInt(return_code);
+}
+
+pub fn SQLMoreResults(handle: ?*anyopaque) rc.MoreResultsRC {
+    const return_code = c.SQLMoreResults(handle);
     return @enumFromInt(return_code);
 }
 
@@ -166,7 +314,7 @@ pub fn SQLFetch(handle: ?*anyopaque) rc.FetchRC {
 pub fn SQLFetchScroll(
     handle: ?*anyopaque,
     orientation: types.FetchOrientation,
-    offset: i64,
+    offset: usize,
 ) rc.FetchScrollRC {
     const return_code = c.SQLFetchScroll(
         handle,

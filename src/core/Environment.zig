@@ -1,7 +1,6 @@
 const std = @import("std");
 
 const errors = @import("errors.zig");
-const SetEnvAttrError = errors.SetEnvAttrError;
 const Handle = @import("Handle.zig");
 
 const odbc = @import("odbc");
@@ -61,3 +60,7 @@ pub fn setEnvAttr(
         else => {},
     };
 }
+
+pub const SetEnvAttrError = error{
+    Error,
+};

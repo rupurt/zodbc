@@ -81,6 +81,7 @@
           ]
           ++ pkgs.lib.optionals (pkgs.stdenv.isLinux) [
             pkgs.strace
+            pkgs.valgrind
           ];
 
         DB2_DRIVER = db2Driver;

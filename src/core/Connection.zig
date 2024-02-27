@@ -5,6 +5,7 @@ const Handle = @import("Handle.zig");
 
 const odbc = @import("odbc");
 const rc = odbc.return_codes;
+const types = odbc.types;
 const sql = odbc.sql;
 
 const Self = @This();
@@ -45,8 +46,65 @@ pub fn disconnect(self: *Self) void {
     _ = self;
 }
 
+pub fn getConnectAttr(
+    self: Self,
+    attr: types.ConnectAttrAttribute,
+    value: *anyopaque,
+) !void {
+    return switch (sql.SQLGetConnectAttr(
+        self.handle(),
+        attr,
+        value,
+        0,
+        0,
+    )) {
+        .SUCCESS, .SUCCESS_WITH_INFO => {},
+        .NO_DATA => {
+            const lastError = self.getLastError();
+            std.debug.print("lastError: {}\n", .{lastError});
+            return GetConnectAttrError.Error;
+        },
+        .ERR => {
+            const lastError = self.getLastError();
+            std.debug.print("lastError: {}\n", .{lastError});
+            return GetConnectAttrError.Error;
+        },
+        .INVALID_HANDLE => GetConnectAttrError.InvalidHandle,
+    };
+}
+
+pub fn setConnectAttr(
+    self: Self,
+    attr: types.ConnectAttrAttribute,
+    value: *anyopaque,
+) !void {
+    return switch (sql.SQLSetConnectAttr(
+        self.handle(),
+        attr,
+        value,
+    )) {
+        .SUCCESS => {},
+        .ERR => {
+            const lastError = self.getLastError();
+            std.debug.print("lastError: {}\n", .{lastError});
+            return SetConnectAttrError.Error;
+        },
+        .INVALID_HANDLE => SetConnectAttrError.InvalidHandle,
+    };
+}
+
 pub const DriverConnectError = error{
     Error,
     InvalidHandle,
     NoDataFound,
+};
+
+pub const GetConnectAttrError = error{
+    Error,
+    InvalidHandle,
+};
+
+pub const SetConnectAttrError = error{
+    Error,
+    InvalidHandle,
 };
