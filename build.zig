@@ -18,6 +18,10 @@ pub fn build(b: *std.Build) void {
     const odbc_mod = b.addModule("odbc", .{
         .root_source_file = .{ .path = "src/odbc/root.zig" },
     });
+    const fmt_mod = b.addModule("fmt", .{
+        .root_source_file = .{ .path = "src/fmt/root.zig" },
+        .imports = &.{},
+    });
     const core_mod = b.addModule("core", .{
         .root_source_file = .{ .path = "src/core/root.zig" },
         .imports = &.{
@@ -41,6 +45,7 @@ pub fn build(b: *std.Build) void {
         .root_source_file = .{ .path = "src/lib.zig" },
         .imports = &.{
             .{ .name = "odbc", .module = odbc_mod },
+            .{ .name = "fmt", .module = fmt_mod },
             .{ .name = "core", .module = core_mod },
             .{ .name = "pool", .module = pool_mod },
             .{ .name = "testing", .module = testing_mod },

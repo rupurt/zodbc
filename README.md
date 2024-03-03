@@ -23,6 +23,7 @@ COMMANDS:
   functions
   procedures
   procedure-columns
+  info
   benchmark
 
 OPTIONS:
@@ -63,6 +64,7 @@ OPTIONS:
     - [functions](./docs/commands/functions)
     - [procedures](./docs/commands/procedures)
     - [procedure-columns](./docs/commands/procedure-columns)
+    - [info](./docs/commands/info)
     - [benchmark](./docs/commands/benchmark)
 - [Library](./docs/LIBRARY.md)
 - [Nix](./docs/NIX.md)

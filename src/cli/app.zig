@@ -13,6 +13,7 @@ const data_sources = @import("cmd/data_sources.zig");
 const functions = @import("cmd/functions.zig");
 const procedures = @import("cmd/procedures.zig");
 const procedure_columns = @import("cmd/procedure_columns.zig");
+const info = @import("cmd/info.zig");
 const benchmark = @import("cmd/benchmark.zig");
 
 pub var app = &zig_cli.App{
@@ -33,6 +34,7 @@ pub var app = &zig_cli.App{
                 &functions.cmd,
                 &procedures.cmd,
                 &procedure_columns.cmd,
+                &info.cmd,
                 &benchmark.cmd,
             },
         },
