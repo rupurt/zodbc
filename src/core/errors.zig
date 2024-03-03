@@ -1,8 +1,13 @@
 pub const AllocError = @import("Handle.zig").AllocError;
-pub const DriverConnectError = @import("Connection.zig").DriverConnectError;
+
+const Environment = @import("Environment.zig");
+pub const GetEnvAttrError = Environment.GetEnvAttrError;
+pub const SetEnvAttrError = Environment.SetEnvAttrError;
+
+const Connection = @import("Connection.zig");
+pub const DriverConnectError = Connection.DriverConnectError;
 
 const Statement = @import("Statement.zig");
-pub const SetEnvAttrError = Statement.SetEnvAttrError;
 pub const ColumnsError = Statement.ColumnsError;
 pub const PrepareError = Statement.PrepareError;
 pub const NumResultColsError = Statement.NumResultColsError;

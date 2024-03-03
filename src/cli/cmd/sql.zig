@@ -88,7 +88,7 @@ fn run() !void {
     var bw = std.io.bufferedWriter(stdout_file);
     const stdout = bw.writer();
 
-    const env = try zodbc.Environment.init(.v3_80);
+    const env = try zodbc.Environment.init(.V3_80);
     defer env.deinit();
     var pool = try zodbc.WorkerPool.init(allocator, env, .{ .n_workers = config.n_workers });
     defer pool.deinit();

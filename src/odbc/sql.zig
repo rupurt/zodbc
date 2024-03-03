@@ -7,6 +7,7 @@ pub const c = @cImport({
 });
 
 const types = @import("types.zig");
+const attrs = @import("attributes.zig");
 const rc = @import("return_codes.zig");
 
 pub fn SQLAllocHandle(
@@ -30,17 +31,31 @@ pub fn SQLFreeHandle(
     return @enumFromInt(return_code);
 }
 
+pub fn SQLGetEnvAttr(
+    handle: ?*anyopaque,
+    attribute: attrs.EnvironmentAttribute,
+    value: *anyopaque,
+) rc.GetEnvAttrRC {
+    const return_code = c.SQLGetEnvAttr(
+        handle,
+        @intFromEnum(attribute),
+        value,
+        0,
+        0,
+    );
+    return @enumFromInt(return_code);
+}
+
 pub fn SQLSetEnvAttr(
     handle: ?*anyopaque,
-    attribute: types.SetEnvAttrAttribute,
-    value: *anyopaque,
-    str_len: c_int,
+    attribute: attrs.EnvironmentAttribute,
+    value: *allowzero anyopaque,
 ) rc.SetEnvAttrRC {
     const return_code = c.SQLSetEnvAttr(
         handle,
         @intFromEnum(attribute),
         value,
-        str_len,
+        0,
     );
     return @enumFromInt(return_code);
 }

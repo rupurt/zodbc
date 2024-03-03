@@ -5,7 +5,7 @@ const Environment = core.Environment;
 const Connection = core.Connection;
 
 pub fn environment() !Environment {
-    return try Environment.init(.v3_80);
+    return try Environment.init(.V3_80);
 }
 
 pub fn connection() !EnvironmentConnection {

@@ -13,28 +13,6 @@ pub const HandleType = enum(c_short) {
     DESC = c.SQL_HANDLE_DESC,
 };
 
-pub const SetEnvAttrAttribute = enum(c_int) {
-    // Environment attributes for ODBC
-    ODBC_VERSION = c.SQL_ATTR_ODBC_VERSION,
-    OUTPUT_NTS = c.SQL_ATTR_OUTPUT_NTS,
-    CONNECTION_POOLING = c.SQL_ATTR_CONNECTION_POOLING,
-    CP_MATCH = c.SQL_ATTR_CP_MATCH,
-    // unixODBC additions
-    UNIXODBC_SYSPATH = c.SQL_ATTR_UNIXODBC_SYSPATH,
-    UNIXODBC_VERSION = c.SQL_ATTR_UNIXODBC_VERSION,
-    UNIXODBC_ENVATTR = c.SQL_ATTR_UNIXODBC_ENVATTR,
-    // IBM specific additions
-    // - https://www.ibm.com/docs/en/db2-for-zos/11?topic=functions-sqlsetenvattr-set-environment-attributes
-    // CONNECTTYPE = c.SQL_ATTR_CONNECTTYPE,
-    // MAXCONN = c.SQL_ATTR_MAXCONN,
-};
-
-pub const OdbcVersion = enum(c_ulong) {
-    v2 = c.SQL_OV_ODBC2,
-    v3 = c.SQL_OV_ODBC3,
-    v3_80 = c.SQL_OV_ODBC3_80,
-};
-
 pub const SetConnectAttrAttribute = enum(c_int) {
     // Connection attributes for ODBC 3.0
     ACCESS_MODE = c.SQL_ATTR_ACCESS_MODE,
