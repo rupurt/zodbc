@@ -1,6 +1,7 @@
+.PHONY: all
 all: test build
 
-.PHONY: test
+.PHONY: test test/unit test/integeration test/integration.db2 test.integration.mariadb test.integration/postgres test.summary
 test:
 	zig build test
 test/unit:
@@ -16,23 +17,38 @@ test/integration.postgres:
 test.summary:
 	zig build test --summary all
 
+.PHONY: build build.fast build.small build.safe build.debug
 build: build.fast
 build.fast:
-	zig build -Doptimize=ReleaseFast
+	zig build --release=fast
 build.small:
-	zig build -Doptimize=ReleaseSmall
+	zig build --release=small
 build.safe:
-	zig build -Doptimize=ReleaseSafe
+	zig build --release=safe
+build.debug:
+	zig build -Doptimize=Debug
 
+.PHONY: run
+ifeq (run,$(firstword $(MAKECMDGOALS)))
+  RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+  $(eval $(RUN_ARGS):;@:)
+endif
+run:
+	zig build run -- $(RUN_ARGS)
+
+.PHONY: exec
+ifeq (exec,$(firstword $(MAKECMDGOALS)))
+  EXEC_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+  $(eval $(EXEC_ARGS):;@:)
+endif
+exec:
+	./zig-out/bin/zodbc $(EXEC_ARGS)
+
+.PHONY: clean
 clean:
 	rm -rf zig-*
 
-run:
-	zig build run -- --port=3000
-
-exec:
-	./zig-out/bin/zodbc -h
-
+.PHONY: compose.up compose.down
 compose.up:
 	docker compose up
 compose.down:
