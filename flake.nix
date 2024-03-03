@@ -75,12 +75,12 @@
           [
             pkgs.odbc-driver-pkgs.db2-odbc-driver
             pkgs.odbc-driver-pkgs.postgres-odbc-driver
-            pkgs.modd
             pkgs.tracy
             pkgs.tree-sitter
           ]
           ++ pkgs.lib.optionals (pkgs.stdenv.isLinux) [
             pkgs.strace
+            pkgs.valgrind
           ];
 
         DB2_DRIVER = db2Driver;
