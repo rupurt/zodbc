@@ -1,6 +1,6 @@
 # Commands / Functions
 
-```shell
+```console
 > zodbc functions -h
 USAGE:
   zodbc functions [OPTIONS]

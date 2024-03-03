@@ -1,6 +1,6 @@
 # Commands / SQL
 
-```shell
+```console
 > zodbc sql -h
 USAGE:
   zodbc sql [OPTIONS]
@@ -24,6 +24,8 @@ OPTIONS:
     --timing \
     --verbose=1
 ...
+output
+ - size=951 bytes
 timing:
  - wall=0.530517s
  - connect=0.522567s

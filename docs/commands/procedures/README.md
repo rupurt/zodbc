@@ -1,6 +1,6 @@
 # Commands / Procedures
 
-```shell
+```console
 > zodbc procedures -h
 USAGE:
   zodbc procedures [OPTIONS]

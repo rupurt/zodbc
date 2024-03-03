@@ -1,6 +1,6 @@
 # Commands / Procedure Columns
 
-```shell
+```console
 > zodbc procedure-columns -h
 USAGE:
   zodbc procedure-columns [OPTIONS]

@@ -1,6 +1,6 @@
 # Commands / Primary Keys
 
-```shell
+```console
 > zodbc primary-keys -h
 USAGE:
   zodbc primary-keys [OPTIONS]

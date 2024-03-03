@@ -1,6 +1,6 @@
 # Commands / Statistics
 
-```shell
+```console
 > zodbc statistics -h
 USAGE:
   zodbc statistics [OPTIONS]

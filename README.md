@@ -2,7 +2,7 @@
 
 A blazing fast ODBC Zig client
 
-```shell
+```console
 > zodbc -h
 zodbc
 
@@ -39,6 +39,7 @@ OPTIONS:
 - [ ] ODBC to Arrow record batch reader/writer
 - [ ] ODBC zero copy C ABI 
 - [ ] High level C ABI
+- [ ] Expose all ODBC API's
 - [ ] Database benchmarks
 - [ ] Python bindings
 - [ ] Elixir bindings
@@ -94,35 +95,42 @@ exe.root_module.addImport("zodbc", zodbc_dep.module("zodbc"));
 
 ## Development
 
-```shell
+```console
 > nix develop -c $SHELL
 ```
 
-```shell
+```console
 > make
 ```
 
-```shell
+```console
 > make test
 ```
 
-```shell
+```console
 > make run
 ```
 
-```shell
+```console
 > make clean
 ```
 
-```shell
+```console
 > make build
 ```
 
-```shell
-> make exec
+```console
+> make run -- -h
+> make run -- sql -h
+...
 ```
 
-```shell
+```console
+> make exec -- -h
+> make exec -- sql -h
+```
+
+```console
 > make compose.up
 > make compose.down
 ```

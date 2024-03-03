@@ -1,6 +1,6 @@
 # Commands / Data Sources
 
-```shell
+```console
 > zodbc data-sources -h
 USAGE:
   zodbc data-sources [OPTIONS]

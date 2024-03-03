@@ -1,6 +1,6 @@
 # Commands
 
-```shell
+```console
 > zodbc -h
 zodbc
 

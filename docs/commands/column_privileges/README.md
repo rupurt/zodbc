@@ -1,6 +1,6 @@
 # Commands / Column Privileges
 
-```shell
+```console
 > zodbc column-privileges -h
 USAGE:
   zodbc column-privileges [OPTIONS]

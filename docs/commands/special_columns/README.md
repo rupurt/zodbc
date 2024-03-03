@@ -1,6 +1,6 @@
 # Commands / Special Columns
 
-```shell
+```console
 > zodbc special-columns -h
 USAGE:
   zodbc special-columns [OPTIONS]

@@ -1,6 +1,6 @@
 # Commands / Foreign Keys
 
-```shell
+```console
 > zodbc foreign-keys -h
 USAGE:
   zodbc foreign-keys [OPTIONS]

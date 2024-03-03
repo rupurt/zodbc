@@ -1,6 +1,6 @@
 # Commands / Columns
 
-```shell
+```console
 > zodbc columns -h
 USAGE:
   zodbc columns [OPTIONS]

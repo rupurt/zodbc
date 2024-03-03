@@ -1,6 +1,6 @@
 # Commands / Tables
 
-```shell
+```console
 > zodbc tables -h
 USAGE:
   zodbc tables [OPTIONS]
