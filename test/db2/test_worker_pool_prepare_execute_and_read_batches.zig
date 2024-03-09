@@ -33,13 +33,15 @@ test "can execute a prepared statement and fetch a cursor" {
     try pool.prepare("SELECT * FROM SYSIBM.SYSTABLES");
     try pool.execute();
 
-    // const reader = pool.batchReader();
-    // var n_rows: usize = 0;
-    // while (reader.next()) |rowset| {
-    //     for (rowset.items()) |row| {
-    //         n_rows += 1;
-    //         try testing.expectEqualStrings("", row[0].name);
-    //     }
-    // }
+    // const fetch_array_size = 1;
+    // const reader = try pool.batchReader(allocator, fetch_array_size);
+    // defer reader.deinit();
+    // const n_rows: usize = 0;
+    // // while (reader.next()) |rowset| {
+    // //     for (0..rowset.column_buffers.len) |c| {
+    // //         n_rows += 1;
+    // //         try testing.expectEqualStrings("", row[0].name);
+    // //     }
+    // // }
     // try testing.expect(n_rows > 0);
 }

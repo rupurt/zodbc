@@ -5,6 +5,9 @@ const Environment = core.Environment;
 const Connection = core.Connection;
 const Statement = core.Statement;
 
+const odbc = @import("odbc");
+const types = odbc.types;
+
 const thread_worker = @import("thread_worker.zig");
 const ThreadWorker = thread_worker.ThreadWorker;
 const HandleResult = thread_worker.HandleResult;
@@ -27,7 +30,7 @@ pub const Worker = ThreadWorker(
                 .prepare => handlePrepare(msg, ctx),
                 .execute => handleExecute(msg, ctx),
                 .executeDirect => handleExecuteDirect(msg, ctx),
-                .setPos => handleSetPos(msg, ctx),
+                // .setPos => handleSetPos(msg, ctx),
                 .fetchScroll => handleFetchScroll(msg, ctx),
             };
         }
@@ -101,17 +104,23 @@ pub const Worker = ThreadWorker(
             return .{ .reply = .{ .execute = .{} } };
         }
 
-        inline fn handleSetPos(msg: Message, ctx: *Context) HandleResult(ParentMessage) {
-            _ = ctx;
-            _ = msg;
-            std.debug.print("Worker#handleSetPos/2\n", .{});
-            return .{ .reply = .{ .setPos = .{} } };
-        }
+        // inline fn handleSetPos(msg: Message, ctx: *Context) HandleResult(ParentMessage) {
+        //     std.debug.print("Worker#handleSetPos/2 offset={any}\n", .{msg.setPos.offset});
+        //     const m = msg.setPos;
+        //     ctx.stmt.?.setPos(m.offset, m.operation, m.lock) catch |err| {
+        //         std.debug.print("error executing statement: {any}\n", .{err});
+        //         return .{ .stop = .{} };
+        //     };
+        //     return .{ .reply = .{ .setPos = .{} } };
+        // }
 
         inline fn handleFetchScroll(msg: Message, ctx: *Context) HandleResult(ParentMessage) {
-            _ = ctx;
-            _ = msg;
-            std.debug.print("Worker#handleFetchScroll/2\n", .{});
+            std.debug.print("Worker#handleFetchScroll/2 offset={any}\n", .{msg.fetchScroll.offset});
+            const m = msg.fetchScroll;
+            ctx.stmt.?.fetchScroll(m.orientation, m.offset) catch |err| {
+                std.debug.print("error executing statement: {any}\n", .{err});
+                return .{ .stop = .{} };
+            };
             return .{ .reply = .{ .fetchScroll = .{} } };
         }
     },
@@ -138,10 +147,15 @@ const Message = union(MessageType) {
     executeDirect: struct {
         statement_str: []const u8,
     },
-    setPos: struct {
+    // setPos: struct {
+    //     offset: usize,
+    //     operation: types.SetPosOperation,
+    //     lock: types.Lock,
+    // },
+    fetchScroll: struct {
+        orientation: types.FetchOrientation,
         offset: usize,
     },
-    fetchScroll: struct {},
 };
 const MessageType = enum {
     join,
@@ -152,6 +166,6 @@ const MessageType = enum {
     prepare,
     execute,
     executeDirect,
-    setPos,
+    // setPos,
     fetchScroll,
 };
