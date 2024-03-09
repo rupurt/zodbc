@@ -7,6 +7,7 @@ pub const c = @cImport({
 });
 
 const types = @import("types.zig");
+const info = @import("info.zig");
 const attrs = @import("attributes.zig");
 const rc = @import("return_codes.zig");
 
@@ -56,6 +57,23 @@ pub fn SQLSetEnvAttr(
         @intFromEnum(attribute),
         value,
         0,
+    );
+    return @enumFromInt(return_code);
+}
+
+pub fn SQLGetInfo(
+    handle: ?*anyopaque,
+    info_type: info.InfoType,
+    value: *anyopaque,
+    buf_len: i16,
+    str_len: *i16,
+) rc.GetInfoRC {
+    const return_code = c.SQLGetInfo(
+        handle,
+        @intCast(@intFromEnum(info_type)),
+        value,
+        buf_len,
+        str_len,
     );
     return @enumFromInt(return_code);
 }

@@ -30,6 +30,13 @@ pub const SetEnvAttrRC = enum(c_short) {
     INVALID_HANDLE = c.SQL_INVALID_HANDLE,
 };
 
+pub const GetInfoRC = enum(c_short) {
+    SUCCESS = c.SQL_SUCCESS,
+    SUCCESS_WITH_INFO = c.SQL_SUCCESS_WITH_INFO,
+    ERR = c.SQL_ERROR,
+    INVALID_HANDLE = c.SQL_INVALID_HANDLE,
+};
+
 pub const SetConnectAttrRC = enum(c_short) {
     SUCCESS = c.SQL_SUCCESS,
     SUCCESS_WITH_INFO = c.SQL_SUCCESS_WITH_INFO,

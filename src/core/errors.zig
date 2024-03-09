@@ -6,6 +6,7 @@ pub const SetEnvAttrError = Environment.SetEnvAttrError;
 
 const Connection = @import("Connection.zig");
 pub const DriverConnectError = Connection.DriverConnectError;
+pub const GetInfoError = Connection.GetInfoError;
 
 const Statement = @import("Statement.zig");
 pub const ColumnsError = Statement.ColumnsError;

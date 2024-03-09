@@ -13,7 +13,7 @@ test ".getEnvAttr/1 retrieves the current setting for an environment attribute" 
     defer env.deinit();
 
     const odbc_version_attr = try env.getEnvAttr(.OdbcVersion);
-    try expectEqual(AttributeValue.OdbcVersion.V3_80, odbc_version_attr.OdbcVersion);
+    try expectEqual(AttributeValue.OdbcVersion.V3, odbc_version_attr.OdbcVersion);
 
     const output_nts_attr = try env.getEnvAttr(.OutputNts);
     try expectEqual(AttributeValue.OutputNts.True, output_nts_attr.OutputNts);

@@ -4,8 +4,11 @@ const Environment = @import("Environment.zig");
 const Handle = @import("Handle.zig");
 
 const odbc = @import("odbc");
-const rc = odbc.return_codes;
+const info = odbc.info;
 const sql = odbc.sql;
+
+const InfoType = info.InfoType;
+const InfoTypeValue = info.InfoTypeValue;
 
 const Self = @This();
 
@@ -26,6 +29,26 @@ pub fn handle(self: *const Self) ?*anyopaque {
 
 pub fn getLastError(self: *const Self) sql.LastError {
     return self.handler.getLastError();
+}
+
+pub fn getInfo(self: Self, info_type: InfoType) !InfoTypeValue {
+    var value = InfoTypeValue{ .info_type = info_type };
+
+    return switch (sql.SQLGetInfo(
+        self.handle(),
+        info_type,
+        &value.buf,
+        value.buf.len,
+        &value.str_len,
+    )) {
+        .SUCCESS, .SUCCESS_WITH_INFO => value,
+        .ERR => {
+            const lastError = self.getLastError();
+            std.debug.print("lastError: {}\n", .{lastError});
+            return GetInfoError.Error;
+        },
+        .INVALID_HANDLE => GetInfoError.InvalidHandle,
+    };
 }
 
 pub fn connectWithString(self: *const Self, dsn: []const u8) !void {
@@ -49,4 +72,9 @@ pub const DriverConnectError = error{
     Error,
     InvalidHandle,
     NoDataFound,
+};
+
+pub const GetInfoError = error{
+    Error,
+    InvalidHandle,
 };
