@@ -13,7 +13,7 @@ pub const ParentMessage = union(ParentMessageType) {
     prepare: struct {},
     execute: struct {},
     executeDirect: struct {},
-    setPos: struct {},
+    // setPos: struct {},
     fetchScroll: struct {},
 };
 pub const ParentMessageType = enum {
@@ -24,6 +24,6 @@ pub const ParentMessageType = enum {
     prepare,
     execute,
     executeDirect,
-    setPos,
+    // setPos,
     fetchScroll,
 };

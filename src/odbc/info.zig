@@ -12,6 +12,8 @@ pub const c = @cImport({
     @cInclude("sqlext.h");
 });
 
+const Bitmask = @import("bitmask.zig").Bitmask;
+
 pub const InfoType = enum(c_int) {
     // ODBC spec
     AccessibleProcedures = c.SQL_ACCESSIBLE_PROCEDURES,

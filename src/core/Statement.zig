@@ -7,9 +7,12 @@ const Environment = @import("Environment.zig");
 const Connection = @import("Connection.zig");
 
 const odbc = @import("odbc");
-const rc = odbc.return_codes;
+const attrs = odbc.attributes;
 const types = odbc.types;
 const sql = odbc.sql;
+
+const Attribute = attrs.StatementAttribute;
+const AttributeValue = attrs.StatementAttributeValue;
 
 const Self = @This();
 
@@ -199,40 +202,138 @@ pub fn setCursorName(self: Self) !void {
     _ = self;
 }
 
-pub fn setPos(self: Self) !void {
-    _ = self;
+pub fn setPos(
+    self: Self,
+    offset: usize,
+    operation: types.SetPosOperation,
+    lock: types.Lock,
+) !void {
+    return switch (sql.SQLSetPos(
+        self.handle(),
+        offset,
+        operation,
+        lock,
+    )) {
+        .SUCCESS, .SUCCESS_WITH_INFO => {},
+        .ERR => {
+            const lastError = self.getLastError();
+            std.debug.print("lastError: {}\n", .{lastError});
+            return BindColError.Error;
+        },
+        .INVALID_HANDLE => SetPosError.InvalidHandle,
+        .NEED_DATA => SetPosError.NeedData,
+        .STILL_EXECUTING => SetPosError.StillExecuting,
+    };
 }
 
 pub fn execute(self: Self) !void {
     return switch (sql.SQLExecute(self.handle())) {
         .SUCCESS, .SUCCESS_WITH_INFO => {},
-        .ERR => ExecuteError.Error,
+        .ERR => {
+            const lastError = self.getLastError();
+            std.debug.print("lastError: {}\n", .{lastError});
+            return ExecuteError.Error;
+        },
         .INVALID_HANDLE => ExecuteError.InvalidHandle,
         .NEED_DATA => ExecuteError.NeedData,
         .NO_DATA_FOUND => ExecuteError.NoDataFound,
     };
 }
 
-pub fn execDirect(self: Self) !void {
-    _ = self;
+pub fn execDirect(self: Self, stmt_str: []const u8) !void {
+    return switch (sql.SQLExecDirect(
+        self.handle(),
+        stmt_str,
+    )) {
+        .SUCCESS, .SUCCESS_WITH_INFO => {},
+        .ERR => {
+            const lastError = self.getLastError();
+            std.debug.print("lastError: {}\n", .{lastError});
+            return ExecDirectError.Error;
+        },
+        .INVALID_HANDLE => ExecDirectError.InvalidHandle,
+        .NEED_DATA => ExecDirectError.NeedData,
+        .NO_DATA_FOUND => ExecDirectError.NoDataFound,
+    };
 }
 
-pub fn setStmtAttr(self: Self) !void {
-    _ = self;
+pub fn rowCount(self: Self) !isize {
+    var row_count: isize = 0;
+    return switch (sql.SQLRowCount(
+        self.handle(),
+        &row_count,
+    )) {
+        .SUCCESS => @intCast(row_count),
+        .ERR => {
+            const lastError = self.getLastError();
+            std.debug.print("lastError: {}\n", .{lastError});
+            return RowCountError.Error;
+        },
+        .INVALID_HANDLE => RowCountError.InvalidHandle,
+    };
 }
 
-pub fn getStmtAttr(self: Self) !void {
-    _ = self;
+pub fn getStmtAttr(self: Self, attr: Attribute) !AttributeValue {
+    var value: i32 = undefined;
+
+    return switch (sql.SQLGetStmtAttr(
+        self.handle(),
+        attr,
+        &value,
+    )) {
+        .SUCCESS, .SUCCESS_WITH_INFO => AttributeValue.fromAttribute(attr, value),
+        .ERR => {
+            const lastError = self.getLastError();
+            std.debug.print("lastError: {}\n", .{lastError});
+            return GetStmtAttrError.Error;
+        },
+        .INVALID_HANDLE => GetStmtAttrError.InvalidHandle,
+    };
 }
 
-pub fn moreResults(self: Self) !void {
-    _ = self;
+pub fn setStmtAttr(
+    self: Self,
+    attr: types.StmtAttrAttribute,
+    value: *anyopaque,
+    str_len: isize,
+) !void {
+    return switch (sql.SQLSetStmtAttr(
+        self.handle(),
+        attr,
+        value,
+        str_len,
+    )) {
+        .SUCCESS, .SUCCESS_WITH_INFO => {},
+        .ERR => {
+            const lastError = self.getLastError();
+            std.debug.print("lastError: {}\n", .{lastError});
+            return SetStmtAttrError.Error;
+        },
+        .INVALID_HANDLE => SetStmtAttrError.InvalidHandle,
+    };
+}
+
+pub fn moreResults(self: Self) !bool {
+    return switch (sql.SQLMoreResults(self.handle())) {
+        .SUCCESS, .SUCCESS_WITH_INFO => true,
+        .NO_DATA_FOUND => false,
+        .ERR => {
+            const lastError = self.getLastError();
+            std.debug.print("lastError: {}\n", .{lastError});
+            return MoreResultsError.Error;
+        },
+        .INVALID_HANDLE => MoreResultsError.InvalidHandle,
+    };
 }
 
 pub fn fetch(self: Self) !void {
     return switch (sql.SQLFetch(self.handle())) {
         .SUCCESS, .SUCCESS_WITH_INFO => {},
-        .ERR => FetchError.Error,
+        .ERR => {
+            const lastError = self.getLastError();
+            std.debug.print("lastError: {}\n", .{lastError});
+            return FetchError.Error;
+        },
         .INVALID_HANDLE => FetchError.InvalidHandle,
         .NO_DATA_FOUND => FetchError.NoDataFound,
     };
@@ -241,7 +342,7 @@ pub fn fetch(self: Self) !void {
 pub fn fetchScroll(
     self: Self,
     orientation: types.FetchOrientation,
-    offset: i64,
+    offset: usize,
 ) !void {
     return switch (sql.SQLFetchScroll(
         self.handle(),
@@ -249,16 +350,29 @@ pub fn fetchScroll(
         offset,
     )) {
         .SUCCESS, .SUCCESS_WITH_INFO => {},
-        .ERR => FetchScrollError.Error,
+        .ERR => {
+            const lastError = self.getLastError();
+            std.debug.print("lastError: {}\n", .{lastError});
+            return FetchScrollError.Error;
+        },
         .INVALID_HANDLE => FetchScrollError.InvalidHandle,
-        // .NEED_DATA => FetchScrollError.NeedData,
-        // .NO_DATA_FOUND => FetchScrollError.NoDataFound,
+        .NO_DATA_FOUND => FetchScrollError.NoDataFound,
     };
 }
 
 pub fn describeColumns(self: Self) !void {
     _ = self;
 }
+
+pub const GetStmtAttrError = error{
+    Error,
+    InvalidHandle,
+};
+
+pub const SetStmtAttrError = error{
+    Error,
+    InvalidHandle,
+};
 
 pub const ColumnsError = error{
     Error,
@@ -294,6 +408,30 @@ pub const ExecuteError = error{
     NoDataFound,
 };
 
+pub const ExecDirectError = error{
+    Error,
+    InvalidHandle,
+    NeedData,
+    NoDataFound,
+};
+
+pub const RowCountError = error{
+    Error,
+    InvalidHandle,
+};
+
+pub const MoreResultsError = error{
+    Error,
+    InvalidHandle,
+};
+
+pub const SetPosError = error{
+    Error,
+    InvalidHandle,
+    NeedData,
+    StillExecuting,
+};
+
 pub const FetchError = error{
     Error,
     InvalidHandle,
@@ -303,11 +441,10 @@ pub const FetchError = error{
 pub const FetchScrollError = error{
     Error,
     InvalidHandle,
-    // NeedData,
-    // NoDataFound,
+    NoDataFound,
 };
 
-test ".init/1 returns an error when called without an established connection" {
+test "init/1 returns an error when called without an established connection" {
     const env = try Environment.init(.V3);
     defer env.deinit();
     const con = try Connection.init(env);
