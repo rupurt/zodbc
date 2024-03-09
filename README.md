@@ -69,6 +69,7 @@ OPTIONS:
     - [attrs](./docs/commands/attrs)
         - [env](./docs/commands/attrs#env)
         - [con](./docs/commands/attrs#con)
+        - [stmt](./docs/commands/attrs#stmt)
     - [benchmark](./docs/commands/benchmark)
 - [Library](./docs/LIBRARY.md)
 - [Nix](./docs/NIX.md)

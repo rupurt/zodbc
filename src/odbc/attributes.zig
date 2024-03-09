@@ -395,3 +395,322 @@ pub const ConnectionAttributeValue = union(ConnectionAttribute) {
         Off = c.SQL_ASYNC_DBC_ENABLE_OFF,
     };
 };
+
+//
+// Statement
+//
+
+/// The integer codes for ODBC compliant statement attributes
+pub const StatementAttribute = enum(c_int) {
+    // NOTE:
+    // - attributes from unixODBC headers
+    // // Statement attributes for ODBC 3.0
+    // ASYNC_ENABLE = c.SQL_ATTR_ASYNC_ENABLE,
+    // ENABLE_AUTO_IPD = c.SQL_ATTR_ENABLE_AUTO_IPD,
+    // FETCH_BOOKMARK_PTR = c.SQL_ATTR_FETCH_BOOKMARK_PTR,
+    // KEYSET_SIZE = c.SQL_ATTR_KEYSET_SIZE,
+    // MAX_ROWS = c.SQL_ATTR_MAX_ROWS,
+    // PARAM_BIND_OFFSET_PTR = c.SQL_ATTR_PARAM_BIND_OFFSET_PTR,
+    // PARAM_BIND_TYPE = c.SQL_ATTR_PARAM_BIND_TYPE,
+    // PARAM_OPERATION_PTR = c.SQL_ATTR_PARAM_OPERATION_PTR,
+    // PARAM_STATUS_PTR = c.SQL_ATTR_PARAM_STATUS_PTR,
+    // QUERY_TIMEOUT = c.SQL_ATTR_QUERY_TIMEOUT,
+    // ROW_BIND_OFFSET_PTR = c.SQL_ATTR_ROW_BIND_OFFSET_PTR,
+    // ROW_OPERATION_PTR = c.SQL_ATTR_ROW_OPERATION_PTR,
+    // SIMULATE_CURSOR = c.SQL_ATTR_SIMULATE_CURSOR,
+    // // Statement attributes for ODBC >= 3.80
+    // ASYNC_STMT_EVENT = c.SQL_ATTR_ASYNC_STMT_EVENT,
+    // // TODO:
+    // // - not sure what this group should be?
+    // // APP_ROW_DESC = c.SQL_ATTR_APP_ROW_DESC,
+    // // APP_PARAM_DESC = c.SQL_ATTR_APP_PARAM_DESC,
+    // // IMP_ROW_DESC = c.SQL_ATTR_IMP_ROW_DESC,
+    // // IMP_PARAM_DESC = c.SQL_ATTR_IMP_PARAM_DESC,
+
+    // ODBC spec 3.0
+    RowBindType = c.SQL_ATTR_ROW_BIND_TYPE,
+    Concurrency = c.SQL_ATTR_CONCURRENCY,
+    CursorScrollable = c.SQL_ATTR_CURSOR_SCROLLABLE,
+    CursorSensitivity = c.SQL_ATTR_CURSOR_SENSITIVITY,
+    CursorType = c.SQL_ATTR_CURSOR_TYPE,
+    MaxLength = c.SQL_ATTR_MAX_LENGTH,
+    MaxRows = c.SQL_ATTR_MAX_ROWS,
+    ParamsetSize = c.SQL_ATTR_PARAMSET_SIZE,
+    ParamsProcessedPtr = c.SQL_ATTR_PARAMS_PROCESSED_PTR,
+    RetrieveData = c.SQL_ATTR_RETRIEVE_DATA,
+    RowArraySize = c.SQL_ATTR_ROW_ARRAY_SIZE,
+    RowNumber = c.SQL_ATTR_ROW_NUMBER,
+    RowStatusPtr = c.SQL_ATTR_ROW_STATUS_PTR,
+    RowsFetchedPtr = c.SQL_ATTR_ROWS_FETCHED_PTR,
+    TxnIsolation = c.SQL_ATTR_TXN_ISOLATION,
+    UseBookmark = c.SQL_ATTR_USE_BOOKMARKS,
+    // IBM Db2 specific additions
+    // - https://www.ibm.com/docs/en/db2-for-zos/12?topic=functions-sqlsetstmtattr-set-statement-attributes
+    // BindType = c.SQL_ATTR_BIND_TYPE,
+    // CcsidChar = c.SQL_CCSID_CHAR,
+    // CcsidGraphic = c.SQL_CCSID_GRAPHIC,
+    // ClientTimeZone = c.SQL_ATTR_CLIENT_TIME_ZONE,
+    // CloseBehavior = c.SQL_ATTR_CLOSE_BEHAVIOR,
+    // CursorHold = c.SQL_ATTR_CURSOR_HOLD,
+    // Nodescribe = c.SQL_ATTR_NODESCRIBE,
+    // Noscan = c.SQL_ATTR_NOSCAN,
+    // ParamoptAtomic = c.SQL_ATTR_PARAMOPT_ATOMIC,
+    // RowOperationPointer = c.SQL_ATTR_ROW_OPERATION_POINTER,
+    // RowsetSize = c.SQL_ATTR_ROWSET_SIZE,
+    // StmttxnIsolation = c.SQL_ATTR_STMTTXN_ISOLATION,
+};
+
+pub const StatementAttributeValueFoo = union(StatementAttribute) {
+    RowBindType: RowBindType,
+    Concurrency: Concurrency,
+    CursorScrollable: CursorScrollable,
+    CursorSensitivity: CursorSensitivity,
+    CursorType: CursorType,
+    MaxLength: usize,
+    MaxRows: usize,
+    ParamsetSize: usize,
+    ParamsProcessedPtr: *isize,
+    RetrieveData: RetrieveData,
+    RowArraySize: usize,
+    RowNumber: usize,
+    RowStatusPtr: *isize,
+    RowsFetchedPtr: *isize,
+    TxnIsolation: TxnIsolation,
+    UseBookmark: UseBookmark,
+
+    pub fn fromAttribute(attr: StatementAttribute, value: isize) StatementAttributeValueFoo {
+        return switch (attr) {
+            .RowBindType => .{ .RowBindType = @enumFromInt(value) },
+            .Concurrency => .{ .Concurrency = @enumFromInt(value) },
+            .CursorScrollable => .{ .CursorScrollable = @enumFromInt(value) },
+            .CursorSensitivity => .{ .CursorSensitivity = @enumFromInt(value) },
+            .CursorType => .{ .CursorType = @enumFromInt(value) },
+            .MaxLength => .{ .MaxLength = @intCast(value) },
+            .MaxRows => .{ .MaxRows = @intCast(value) },
+            .ParamsetSize => .{ .ParamsetSize = @intCast(value) },
+            .ParamsProcessedPtr => .{ .ParamsProcessedPtr = @ptrCast(@constCast(&value)) },
+            .RetrieveData => .{ .RetrieveData = @enumFromInt(value) },
+            .RowArraySize => .{ .RowArraySize = @intCast(value) },
+            .RowNumber => .{ .RowNumber = @intCast(value) },
+            .RowStatusPtr => .{ .RowStatusPtr = @ptrCast(@constCast(&value)) },
+            .RowsFetchedPtr => .{ .RowsFetchedPtr = @ptrCast(@constCast(&value)) },
+            .TxnIsolation => .{ .TxnIsolation = @enumFromInt(value) },
+            .UseBookmark => .{ .UseBookmark = @enumFromInt(value) },
+        };
+    }
+
+    pub fn activeTag(self: StatementAttributeValueFoo) StatementAttribute {
+        return std.meta.activeTag(self);
+    }
+
+    pub fn getValue(self: StatementAttributeValueFoo) usize {
+        return switch (self) {
+            .RowBindType => |v| @as(usize, @intCast(@intFromEnum(v))),
+            .Concurrency => |v| @as(usize, @intCast(@intFromEnum(v))),
+            .CursorScrollable => |v| @as(usize, @intCast(@intFromEnum(v))),
+            .CursorSensitivity => |v| @as(usize, @intCast(@intFromEnum(v))),
+            .CursorType => |v| @as(usize, @intCast(@intFromEnum(v))),
+            .MaxLength => |v| @as(usize, @intCast(@intFromEnum(v))),
+            .MaxRows => |v| @as(usize, @intCast(@intFromEnum(v))),
+            .ParamsetSize => |v| @as(usize, @intCast(@intFromEnum(v))),
+            .ParamsProcessedPtr => |v| @as(usize, @intCast(@intFromEnum(v))),
+            .RetrieveData => |v| @as(usize, @intCast(@intFromEnum(v))),
+            .RowArraySize => |v| @as(usize, @intCast(@intFromEnum(v))),
+            .RowNumber => |v| @as(usize, @intCast(@intFromEnum(v))),
+            .RowStatusPtr => |v| @as(usize, @intCast(@intFromEnum(v))),
+            .RowsFetchedPtr => |v| @as(usize, @intCast(@intFromEnum(v))),
+            .TxnIsolation => |v| @as(usize, @intCast(@intFromEnum(v))),
+            .UseBookmark => |v| @as(usize, @intCast(@intFromEnum(v))),
+        };
+    }
+
+    pub const RowBindType = enum(c_ulong) {
+        Column = c.SQL_BIND_BY_COLUMN,
+    };
+
+    pub const Concurrency = enum(c_int) {
+        ReadOnly = c.SQL_CONCUR_READ_ONLY,
+        Lock = c.SQL_CONCUR_LOCK,
+    };
+
+    pub const CursorScrollable = enum(c_int) {
+        NonScrollable = c.SQL_NONSCROLLABLE,
+        Scrollable = c.SQL_SCROLLABLE,
+    };
+
+    pub const CursorSensitivity = enum(c_int) {
+        Unspecified = c.SQL_UNSPECIFIED,
+        Insensitive = c.SQL_INSENSITIVE,
+        Sensitive = c.SQL_SENSITIVE,
+    };
+
+    pub const CursorType = enum(c_ulong) {
+        ForwardOnly = c.SQL_CURSOR_FORWARD_ONLY,
+        Static = c.SQL_CURSOR_STATIC,
+        Dynamic = c.SQL_CURSOR_DYNAMIC,
+    };
+
+    pub const RetrieveData = enum(c_ulong) {
+        On = c.SQL_RD_ON,
+        Off = c.SQL_RD_OFF,
+    };
+
+    pub const TxnIsolation = enum(c_long) {
+        ReadUncommitted = c.SQL_TXN_READ_UNCOMMITTED,
+        ReadCommitted = c.SQL_TRANSACTION_READ_COMMITTED,
+        RepeatableRead = c.SQL_TXN_REPEATABLE_READ,
+        Serializable = c.SQL_TXN_SERIALIZABLE,
+    };
+
+    pub const UseBookmark = enum(c_ulong) {
+        Off = c.SQL_UB_OFF,
+        Variable = c.SQL_UB_VARIABLE,
+    };
+};
+
+pub const StatementAttributeValue = union(StatementAttribute) {
+    RowBindType: u64,
+    Concurrency: Concurrency,
+    CursorScrollable: CursorScrollable,
+    CursorSensitivity: CursorSensitivity,
+    CursorType: CursorType,
+    MaxLength: usize,
+    MaxRows: usize,
+    ParamsetSize: usize,
+    ParamsProcessedPtr: *isize,
+    RetrieveData: RetrieveData,
+    RowArraySize: usize,
+    RowNumber: usize,
+    RowStatusPtr: *isize,
+    RowsFetchedPtr: *isize,
+    TxnIsolation: TxnIsolation,
+    UseBookmark: UseBookmark,
+
+    pub fn init(
+        allocator: std.mem.Allocator,
+        attr: StatementAttribute,
+        odbc_buf: []u8,
+        str_len: i32,
+    ) !StatementAttributeValue {
+        _ = str_len;
+        _ = allocator;
+        return switch (attr) {
+            // .UnixodbcSyspath => {
+            //     const str = try allocator.alloc(u8, @intCast(str_len));
+            //     @memcpy(str, odbc_buf[0..@intCast(str_len)]);
+            //     return .{ .UnixodbcSyspath = str[0..] };
+            // },
+            .RowBindType => .{ .RowBindType = readInt(u64, odbc_buf) },
+            .Concurrency => .{ .Concurrency = @enumFromInt(readInt(u32, odbc_buf)) },
+            .CursorScrollable => .{ .CursorScrollable = @enumFromInt(readInt(u32, odbc_buf)) },
+            .CursorSensitivity => .{ .CursorSensitivity = @enumFromInt(readInt(u32, odbc_buf)) },
+            .CursorType => .{ .CursorType = @enumFromInt(readInt(u32, odbc_buf)) },
+            .MaxLength => .{ .MaxLength = readInt(u32, odbc_buf) },
+            .MaxRows => .{ .MaxRows = readInt(u32, odbc_buf) },
+            .ParamsetSize => .{ .ParamsetSize = readInt(u32, odbc_buf) },
+            .ParamsProcessedPtr => .{ .ParamsProcessedPtr = @ptrFromInt(readInt(u32, odbc_buf)) },
+            .RetrieveData => .{ .RetrieveData = @enumFromInt(readInt(u32, odbc_buf)) },
+            .RowArraySize => .{ .RowArraySize = readInt(u32, odbc_buf) },
+            .RowNumber => .{ .RowNumber = readInt(u32, odbc_buf) },
+            .RowStatusPtr => .{ .RowStatusPtr = @ptrFromInt(readInt(u32, odbc_buf)) },
+            .RowsFetchedPtr => .{ .RowsFetchedPtr = @ptrFromInt(readInt(u32, odbc_buf)) },
+            .TxnIsolation => .{ .TxnIsolation = @enumFromInt(readInt(u32, odbc_buf)) },
+            .UseBookmark => .{ .UseBookmark = @enumFromInt(readInt(u32, odbc_buf)) },
+        };
+    }
+
+    pub fn deinit(
+        self: StatementAttributeValue,
+        allocator: std.mem.Allocator,
+    ) void {
+        _ = allocator;
+        return switch (self) {
+            // .UnixodbcSyspath => |v| allocator.free(v),
+            else => {},
+        };
+    }
+
+    pub fn getActiveTag(self: StatementAttributeValue) StatementAttribute {
+        return std.meta.activeTag(self);
+    }
+
+    pub fn getValue(self: StatementAttributeValue) *allowzero anyopaque {
+        return switch (self) {
+            // .UnixodbcSyspath, .UnixodbcVersion, .UnixodbcEnvattr => |v| @ptrCast(@constCast(v)),
+            // .ConnectionDead => |v| @ptrFromInt(@as(usize, @intCast(@intFromEnum(v)))),
+            // .DriverThreading => |v| @ptrFromInt(@as(usize, v)),
+            // .AccessMode => |v| @ptrFromInt(@as(usize, @intCast(@intFromEnum(v)))),
+            // .Autocommit => |v| @ptrFromInt(@as(usize, @intFromEnum(v))),
+            // .ConnectionTimeout => |v| @ptrFromInt(@as(usize, v)),
+            // .DisconnectBehavior => |v| @ptrFromInt(@as(usize, @intFromEnum(v))),
+            // .EnlistInDtc => |v| @ptrFromInt(@as(usize, @intCast(@intFromEnum(v)))),
+            // // .EnlisttInXa => |v| @ptrFromInt(@as(usize, @intFromEnum(v))),
+            // .LoginTimeout => |v| @ptrFromInt(@as(usize, v)),
+            // .OdbcCursors => |v| @ptrFromInt(@as(usize, @intFromEnum(v))),
+            // .PacketSize => |v| @ptrFromInt(@as(usize, v)),
+            // // .QuietMode => |v| @ptrFromInt(@as(usize, v)),
+            // .Trace => |v| @ptrFromInt(@as(usize, @intFromEnum(v))),
+            // .TxnIsolation => |v| @ptrFromInt(@as(usize, @intCast(@intFromEnum(v)))),
+            // .AnsiApp => |v| @ptrFromInt(@as(usize, @intCast(@intFromEnum(v)))),
+            // .AsyncEnable => |v| @ptrFromInt(@as(usize, @intFromEnum(v))),
+            // .AutoIpd => |v| @ptrFromInt(@as(usize, @intCast(@intFromEnum(v)))),
+            // .ResetConnection => |v| @ptrFromInt(@as(usize, @intFromEnum(v))),
+            // .AsyncDbcFunctionsEnable => |v| @ptrFromInt(@as(usize, @intCast(@intFromEnum(v)))),
+            // .FetBufSize => |v| @ptrFromInt(@as(usize, v)),
+            .RowBindType => |v| @ptrFromInt(@as(usize, v)),
+            .Concurrency => |v| @ptrFromInt(@as(usize, @intCast(@intFromEnum(v)))),
+            else => @ptrFromInt(1),
+        };
+    }
+
+    pub fn getStrLen(self: StatementAttributeValue) i32 {
+        return switch (self) {
+            .RowBindType,
+            .Concurrency,
+            => 0,
+            // .CurrentCatalog => |v| @intCast(v.len),
+            else => 1,
+        };
+    }
+
+    pub const Concurrency = enum(c_int) {
+        ReadOnly = c.SQL_CONCUR_READ_ONLY,
+        Lock = c.SQL_CONCUR_LOCK,
+    };
+
+    pub const CursorScrollable = enum(c_int) {
+        NonScrollable = c.SQL_NONSCROLLABLE,
+        Scrollable = c.SQL_SCROLLABLE,
+    };
+
+    pub const CursorSensitivity = enum(c_int) {
+        Unspecified = c.SQL_UNSPECIFIED,
+        Insensitive = c.SQL_INSENSITIVE,
+        Sensitive = c.SQL_SENSITIVE,
+    };
+
+    pub const CursorType = enum(c_ulong) {
+        ForwardOnly = c.SQL_CURSOR_FORWARD_ONLY,
+        Static = c.SQL_CURSOR_STATIC,
+        Dynamic = c.SQL_CURSOR_DYNAMIC,
+    };
+
+    pub const RetrieveData = enum(c_ulong) {
+        On = c.SQL_RD_ON,
+        Off = c.SQL_RD_OFF,
+    };
+
+    pub const TxnIsolation = enum(c_long) {
+        ReadUncommitted = c.SQL_TXN_READ_UNCOMMITTED,
+        ReadCommitted = c.SQL_TRANSACTION_READ_COMMITTED,
+        RepeatableRead = c.SQL_TXN_REPEATABLE_READ,
+        Serializable = c.SQL_TXN_SERIALIZABLE,
+    };
+
+    pub const UseBookmark = enum(c_ulong) {
+        Off = c.SQL_UB_OFF,
+        Variable = c.SQL_UB_VARIABLE,
+    };
+};
+
+pub const bind_by_column = c.SQL_BIND_BY_COLUMN;

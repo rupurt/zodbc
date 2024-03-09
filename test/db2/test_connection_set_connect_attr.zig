@@ -10,7 +10,7 @@ const attrs = zodbc.odbc.attributes;
 
 const AttributeValue = attrs.ConnectionAttributeValue;
 
-test ".setConnectAttr/1 can modify disconnected items" {
+test "setConnectAttr/1 can modify disconnected values across all statements items" {
     const env_con = try zodbc.testing.connection();
     defer {
         env_con.con.deinit();
@@ -39,7 +39,7 @@ test ".setConnectAttr/1 can modify disconnected items" {
     );
 }
 
-test ".setConnectAttr/1 can modify connected items" {
+test "setConnectAttr/1 can modify connected values across all statements items" {
     const env_con = try zodbc.testing.connection();
     defer {
         env_con.con.deinit();
@@ -158,7 +158,7 @@ test ".setConnectAttr/1 can modify connected items" {
     );
 }
 
-test ".setConnectAttr/1 can modify disconnected Db2 specific items" {
+test "setConnectAttr/1 can modify disconnected Db2 specific items" {
     const env_con = try zodbc.testing.connection();
     defer {
         env_con.con.deinit();

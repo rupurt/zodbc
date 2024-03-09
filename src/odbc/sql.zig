@@ -161,6 +161,52 @@ pub fn SQLColumns(
     return @enumFromInt(return_code);
 }
 
+pub fn SQLGetStmtAttr(
+    handle: ?*anyopaque,
+    attr: attrs.StatementAttribute,
+    value: *anyopaque,
+) rc.GetStmtAttrRC {
+    const return_code = c.SQLGetStmtAttr(
+        handle,
+        @intFromEnum(attr),
+        value,
+        0,
+        0,
+    );
+    return @enumFromInt(return_code);
+}
+pub fn SQLGetStmtAttr2(
+    handle: ?*anyopaque,
+    attr: attrs.StatementAttribute,
+    value: *allowzero anyopaque,
+    buf_len: i32,
+    str_len: *i32,
+) rc.GetStmtAttrRC {
+    const return_code = c.SQLGetStmtAttr(
+        handle,
+        @intFromEnum(attr),
+        value,
+        buf_len,
+        str_len,
+    );
+    return @enumFromInt(return_code);
+}
+
+pub fn SQLSetStmtAttr(
+    handle: ?*anyopaque,
+    attr: attrs.StatementAttribute,
+    value: *allowzero anyopaque,
+    str_len: i32,
+) rc.SetStmtAttrRC {
+    const return_code = c.SQLSetStmtAttr(
+        handle,
+        @intFromEnum(attr),
+        value,
+        str_len,
+    );
+    return @enumFromInt(return_code);
+}
+
 pub fn SQLPrepare(
     handle: ?*anyopaque,
     stmt_str: []const u8,
@@ -179,7 +225,7 @@ pub fn SQLNumResultCols(
 ) rc.NumResultColsRC {
     const return_code = c.SQLNumResultCols(
         handle,
-        @ptrCast(@alignCast(column_count)),
+        @ptrCast(column_count),
     );
     return @enumFromInt(return_code);
 }
@@ -219,10 +265,51 @@ pub fn SQLBindCol(
     return @enumFromInt(return_code);
 }
 
-pub fn SQLExecute(
+pub fn SQLSetPos(
     handle: ?*anyopaque,
-) rc.ExecuteRC {
+    offset: usize,
+    operation: types.SetPosOperation,
+    lock: types.Lock,
+) rc.SetPosRC {
+    const return_code = c.SQLSetPos(
+        handle,
+        offset,
+        @intFromEnum(operation),
+        @intFromEnum(lock),
+    );
+    return @enumFromInt(return_code);
+}
+
+pub fn SQLExecute(handle: ?*anyopaque) rc.ExecuteRC {
     const return_code = c.SQLExecute(handle);
+    return @enumFromInt(return_code);
+}
+
+pub fn SQLExecDirect(
+    handle: ?*anyopaque,
+    stmt_str: []const u8,
+) rc.ExecDirectRC {
+    const return_code = c.SQLExecDirect(
+        handle,
+        @ptrCast(@constCast(stmt_str)),
+        @intCast(stmt_str.len),
+    );
+    return @enumFromInt(return_code);
+}
+
+pub fn SQLRowCount(
+    handle: ?*anyopaque,
+    row_count: *isize,
+) rc.RowCountRC {
+    const return_code = c.SQLRowCount(
+        handle,
+        @ptrCast(row_count),
+    );
+    return @enumFromInt(return_code);
+}
+
+pub fn SQLMoreResults(handle: ?*anyopaque) rc.MoreResultsRC {
+    const return_code = c.SQLMoreResults(handle);
     return @enumFromInt(return_code);
 }
 
@@ -234,7 +321,7 @@ pub fn SQLFetch(handle: ?*anyopaque) rc.FetchRC {
 pub fn SQLFetchScroll(
     handle: ?*anyopaque,
     orientation: types.FetchOrientation,
-    offset: i64,
+    offset: usize,
 ) rc.FetchScrollRC {
     const return_code = c.SQLFetchScroll(
         handle,
@@ -548,7 +635,6 @@ pub fn getLastError(handle_type: types.HandleType, handle: ?*anyopaque) LastErro
     //     // else => return null,
     //     else => return SqlStateError.GeneralError,
     // }
-    std.debug.print("SQLGetDiagRec rc= {}\n", .{result});
     std.debug.print("message_text = {s}\n", .{message_text});
     if (result == 0 or result == 1) {
         const error_state = odbc_error_map.get(sql_state[0..]) orelse .GeneralError;

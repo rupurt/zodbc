@@ -56,7 +56,12 @@ pub fn ThreadWorker(
             while (true) {
                 const msg = w_mailbox.dequeue();
                 switch (@call(.auto, handler, .{ msg, ctx })) {
-                    .stop => break,
+                    .stop => {
+                        p_mailbox.post(.{ .stop = .{} }) catch |err| {
+                            std.debug.print("error posting message to parent mailbox err={any}\n", .{err});
+                        };
+                        break;
+                    },
                     .reply => |r| {
                         p_mailbox.post(r) catch |err| {
                             std.debug.print("error posting message to parent mailbox err={any}\n", .{err});

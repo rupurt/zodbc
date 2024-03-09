@@ -16,9 +16,14 @@ var dsn = zig_cli.Option{
     .required = true,
     .value_ref = zig_cli.mkRef(&config.dsn),
 };
+var fetch_buffer_size = zig_cli.Option{
+    .long_name = "fetch-buffer-size",
+    .help = "Network buffer size in bytes for each fetch operation. Must be a multiple of 32Ki",
+    .value_ref = zig_cli.mkRef(&config.fetch_array_size),
+};
 var fetch_array_size = zig_cli.Option{
     .long_name = "fetch-array-size",
-    .help = "Buffer size for each fetch operation",
+    .help = "Numer of rows to fetch in a rowset",
     .value_ref = zig_cli.mkRef(&config.fetch_array_size),
 };
 var output = zig_cli.Option{
@@ -55,6 +60,8 @@ pub var cmd = zig_cli.Command{
     .options = &.{
         &command,
         &dsn,
+        &fetch_buffer_size,
+        &fetch_array_size,
         &output,
         &include_headers,
         &workers,
@@ -70,6 +77,7 @@ pub var cmd = zig_cli.Command{
 var config = struct {
     command: []const u8 = undefined,
     dsn: []const u8 = undefined,
+    fetch_buffer_size: u32 = 65536,
     fetch_array_size: u32 = 1,
     output: []const u8 = undefined,
     include_headers: bool = true,
@@ -90,8 +98,20 @@ fn run() !void {
 
     const env = try zodbc.Environment.init(.V3);
     defer env.deinit();
-    var pool = try zodbc.WorkerPool.init(allocator, env, .{ .n_workers = config.n_workers });
+    var pool = try zodbc.WorkerPool.init(
+        allocator,
+        env,
+        .{ .n_workers = config.n_workers },
+    );
     defer pool.deinit();
+
+    const init_connection_start_at = timer.read();
+    try pool.initConnection();
+    const init_connection_end_at = timer.read();
+
+    const set_connect_attrs_start_at = timer.read();
+    // try pool.setConnectAttr(.{ .FetBufSize = config.fetch_buffer_size });
+    const set_connect_attrs_end_at = timer.read();
 
     const connect_start_at = timer.read();
     try pool.connectWithString(config.dsn);
@@ -110,6 +130,7 @@ fn run() !void {
     defer reader.deinit();
     const reader_init_end_at = timer.read();
 
+    var row_count: usize = 0;
     const fetch_start_at = timer.read();
     if (std.mem.eql(u8, "", config.output)) {
         const rowset = reader.next();
@@ -121,51 +142,75 @@ fn run() !void {
         );
         defer file.close();
         var total_bytes_written: usize = 0;
-        var wrote_headers = false;
+        if (config.include_headers) {
+            for (reader.column_descriptions, 0..) |col_desc, i| {
+                if (i > 0) {
+                    total_bytes_written += try file.write(",");
+                }
+                total_bytes_written += try file.write(col_desc.name_buf[0..col_desc.name_buf_len]);
+            }
+        }
         while (reader.next()) |rowset| {
-            if (config.include_headers and !wrote_headers) {
-                for (rowset.column_descriptions, 0..) |col_desc, i| {
-                    if (i > 0) {
+            for (0..rowset.column_buffers.len) |c| {
+                for (0..config.fetch_array_size) |r| {
+                    if (c == 0) {
+                        row_count += 1;
+                        total_bytes_written += try file.write("\n");
+                    } else {
                         total_bytes_written += try file.write(",");
                     }
-                    total_bytes_written += try file.write(col_desc.name_buf[0..col_desc.name_buf_len]);
+                    const value = try std.fmt.allocPrint(allocator, "row={d} column={d}", .{ r, c });
+                    total_bytes_written += try file.write(value);
                 }
-                wrote_headers = true;
             }
-            // while (rowset.items.next()) |rowset| {
-            // }
         }
         if (config.verbose > 0) {
-            try stdout.print("output\n", .{});
-            try stdout.print(" - size={d} bytes\n", .{total_bytes_written});
+            const size = try zodbc.fmt.Bytes.allocPrint(allocator, total_bytes_written);
+            try stdout.print("count\n", .{});
+            if (!std.mem.eql(u8, "", config.output)) {
+                try stdout.print(" - row_count={d}\n", .{row_count});
+            }
+            try stdout.print(" - columns={d}\n", .{reader.column_descriptions.len});
+            if (!std.mem.eql(u8, "", config.output)) {
+                try stdout.print("output\n", .{});
+                try stdout.print(" - size={s}\n", .{size});
+            }
         }
     }
     const fetch_end_at = timer.read();
 
     const end_at = timer.read();
     if (config.timing) {
-        const wall_time = run_time(end_at, start_at);
-        const connect_time = run_time(connect_end_at, connect_start_at);
-        const prepare_time = run_time(prepare_end_at, prepare_start_at);
-        const execute_time = run_time(execute_end_at, execute_start_at);
-        const reader_init_time = run_time(reader_init_end_at, reader_init_start_at);
-        const fetch_time = run_time(fetch_end_at, fetch_start_at);
+        const wall_time = runTime(end_at, start_at);
+        const init_connection_time = runTime(init_connection_end_at, init_connection_start_at);
+        const set_connect_attrs_time = runTime(set_connect_attrs_end_at, set_connect_attrs_start_at);
+        const connect_time = runTime(connect_end_at, connect_start_at);
+        const prepare_time = runTime(prepare_end_at, prepare_start_at);
+        const execute_time = runTime(execute_end_at, execute_start_at);
+        const reader_init_time = runTime(reader_init_end_at, reader_init_start_at);
+        const fetch_time = runTime(fetch_end_at, fetch_start_at);
         try stdout.print("timing:\n", .{});
         try stdout.print(" - wall={d:0.6}s\n", .{wall_time});
+        try stdout.print(" - init_connection={d:0.6}s\n", .{init_connection_time});
+        try stdout.print(" - set_connect_attrs={d:0.6}s\n", .{set_connect_attrs_time});
         try stdout.print(" - connect={d:0.6}s\n", .{connect_time});
         try stdout.print(" - prepare={d:0.6}s\n", .{prepare_time});
         try stdout.print(" - execute={d:0.6}s\n", .{execute_time});
-        try stdout.print(" - reader.init={d:0.6}s\n", .{reader_init_time});
+        try stdout.print(" - reader_init={d:0.6}s\n", .{reader_init_time});
         try stdout.print(" - fetch={d:0.6}s\n", .{fetch_time});
     }
 
     try bw.flush();
 }
 
-fn run_time(end_at: usize, start_at: usize) f64 {
-    return ns_to_s(@as(f64, @floatFromInt(end_at - start_at)));
+fn asFloatFromInt(value: usize) f64 {
+    return @as(f64, @floatFromInt(value));
 }
 
-fn ns_to_s(ns: f64) f64 {
+fn runTime(end_at: usize, start_at: usize) f64 {
+    return nsToS(asFloatFromInt(end_at - start_at));
+}
+
+fn nsToS(ns: f64) f64 {
     return ns / 1000.0 / 1000.0 / 1000.0;
 }
