@@ -10,6 +10,7 @@ const zodbc = @import("zodbc");
 const info = zodbc.odbc.info;
 
 const InfoTypeValue = info.InfoTypeValue;
+const Tag = info.InfoTypeValue.Tag;
 
 test ".getInfo/1 returns general information about the connected DBMS" {
     const env_con = try zodbc.testing.connection();
@@ -35,37 +36,37 @@ test ".getInfo/1 returns general information about the connected DBMS" {
 
     info_type = try con.getInfo(.AggregateFunctions);
     try expectEqual(
-        InfoTypeValue.Tag.AggregateFunctionsMask{ .data = 64 },
+        Tag.AggregateFunctionsMask{ .data = 64 },
         info_type.tag().AggregateFunctions,
     );
 
     info_type = try con.getInfo(.AlterDomain);
     try expectEqual(
-        InfoTypeValue.Tag.AlterDomainMask{ .data = 0 },
+        Tag.AlterDomainMask{ .data = 0 },
         info_type.tag().AlterDomain,
     );
 
     info_type = try con.getInfo(.AlterTable);
     try expectEqual(
-        InfoTypeValue.Tag.AlterTableMask{ .data = 61545 },
+        Tag.AlterTableMask{ .data = 61545 },
         info_type.tag().AlterTable,
     );
 
     info_type = try con.getInfo(.BatchRowCount);
     try expectEqual(
-        InfoTypeValue.Tag.BatchRowCountMask{ .data = 4 },
+        Tag.BatchRowCountMask{ .data = 4 },
         info_type.tag().BatchRowCount,
     );
 
     info_type = try con.getInfo(.BatchSupport);
     try expectEqual(
-        InfoTypeValue.Tag.BatchSupportMask{ .data = 7 },
+        Tag.BatchSupportMask{ .data = 7 },
         info_type.tag().BatchSupport,
     );
 
     info_type = try con.getInfo(.BookmarkPersistence);
     try expectEqual(
-        InfoTypeValue.Tag.BookmarkPersistenceMask{ .data = 90 },
+        Tag.BookmarkPersistenceMask{ .data = 90 },
         info_type.tag().BookmarkPersistence,
     );
 
@@ -83,7 +84,7 @@ test ".getInfo/1 returns general information about the connected DBMS" {
 
     info_type = try con.getInfo(.CatalogUsage);
     try expectEqual(
-        InfoTypeValue.Tag.CatalogUsageMask{ .data = 0 },
+        Tag.CatalogUsageMask{ .data = 0 },
         info_type.tag().CatalogUsage,
     );
 
@@ -101,199 +102,199 @@ test ".getInfo/1 returns general information about the connected DBMS" {
 
     info_type = try con.getInfo(.ConvertBigint);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertBigintMask{ .data = 0 },
+        Tag.ConvertBigintMask{ .data = 0 },
         info_type.tag().ConvertBigint,
     );
 
     info_type = try con.getInfo(.ConvertBinary);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertBinaryMask{ .data = 0 },
+        Tag.ConvertBinaryMask{ .data = 0 },
         info_type.tag().ConvertBinary,
     );
 
     info_type = try con.getInfo(.ConvertBit);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertBitMask{ .data = 0 },
+        Tag.ConvertBitMask{ .data = 0 },
         info_type.tag().ConvertBit,
     );
 
     info_type = try con.getInfo(.ConvertChar);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertCharMask{ .data = 129 },
+        Tag.ConvertCharMask{ .data = 129 },
         info_type.tag().ConvertChar,
     );
 
     info_type = try con.getInfo(.ConvertDate);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertDateMask{ .data = 1 },
+        Tag.ConvertDateMask{ .data = 1 },
         info_type.tag().ConvertDate,
     );
 
     info_type = try con.getInfo(.ConvertDecimal);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertDecimalMask{ .data = 129 },
+        Tag.ConvertDecimalMask{ .data = 129 },
         info_type.tag().ConvertDecimal,
     );
 
     info_type = try con.getInfo(.ConvertDouble);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertDoubleMask{ .data = 129 },
+        Tag.ConvertDoubleMask{ .data = 129 },
         info_type.tag().ConvertDouble,
     );
 
     info_type = try con.getInfo(.ConvertFloat);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertFloatMask{ .data = 129 },
+        Tag.ConvertFloatMask{ .data = 129 },
         info_type.tag().ConvertFloat,
     );
 
     info_type = try con.getInfo(.ConvertInteger);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertIntegerMask{ .data = 129 },
+        Tag.ConvertIntegerMask{ .data = 129 },
         info_type.tag().ConvertInteger,
     );
 
     info_type = try con.getInfo(.ConvertIntervalDayTime);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertIntervalDayTimeMask{ .data = 0 },
+        Tag.ConvertIntervalDayTimeMask{ .data = 0 },
         info_type.tag().ConvertIntervalDayTime,
     );
 
     info_type = try con.getInfo(.ConvertIntervalYearMonth);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertIntervalYearMonthMask{ .data = 0 },
+        Tag.ConvertIntervalYearMonthMask{ .data = 0 },
         info_type.tag().ConvertIntervalYearMonth,
     );
 
     info_type = try con.getInfo(.ConvertLongvarbinary);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertLongvarbinaryMask{ .data = 0 },
+        Tag.ConvertLongvarbinaryMask{ .data = 0 },
         info_type.tag().ConvertLongvarbinary,
     );
 
     info_type = try con.getInfo(.ConvertLongvarchar);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertLongvarcharMask{ .data = 0 },
+        Tag.ConvertLongvarcharMask{ .data = 0 },
         info_type.tag().ConvertLongvarchar,
     );
 
     info_type = try con.getInfo(.ConvertNumeric);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertNumericMask{ .data = 129 },
+        Tag.ConvertNumericMask{ .data = 129 },
         info_type.tag().ConvertNumeric,
     );
 
     info_type = try con.getInfo(.ConvertReal);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertRealMask{ .data = 0 },
+        Tag.ConvertRealMask{ .data = 0 },
         info_type.tag().ConvertReal,
     );
 
     info_type = try con.getInfo(.ConvertSmallint);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertSmallintMask{ .data = 129 },
+        Tag.ConvertSmallintMask{ .data = 129 },
         info_type.tag().ConvertSmallint,
     );
 
     info_type = try con.getInfo(.ConvertTime);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertTimeMask{ .data = 1 },
+        Tag.ConvertTimeMask{ .data = 1 },
         info_type.tag().ConvertTime,
     );
 
     info_type = try con.getInfo(.ConvertTimestamp);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertTimestampMask{ .data = 1 },
+        Tag.ConvertTimestampMask{ .data = 1 },
         info_type.tag().ConvertTimestamp,
     );
 
     info_type = try con.getInfo(.ConvertTinyint);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertTinyintMask{ .data = 0 },
+        Tag.ConvertTinyintMask{ .data = 0 },
         info_type.tag().ConvertTinyint,
     );
 
     info_type = try con.getInfo(.ConvertVarbinary);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertVarbinaryMask{ .data = 0 },
+        Tag.ConvertVarbinaryMask{ .data = 0 },
         info_type.tag().ConvertVarbinary,
     );
 
     info_type = try con.getInfo(.ConvertVarchar);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertVarcharMask{ .data = 128 },
+        Tag.ConvertVarcharMask{ .data = 128 },
         info_type.tag().ConvertVarchar,
     );
 
     info_type = try con.getInfo(.ConvertFunctions);
     try expectEqual(
-        InfoTypeValue.Tag.ConvertFunctionsMask{ .data = 3 },
+        Tag.ConvertFunctionsMask{ .data = 3 },
         info_type.tag().ConvertFunctions,
     );
 
     info_type = try con.getInfo(.CorrelationName);
     try expectEqual(
-        InfoTypeValue.Tag.CorrelationName.Any,
+        Tag.CorrelationName.Any,
         info_type.tag().CorrelationName,
     );
 
     info_type = try con.getInfo(.CreateAssertion);
     try expectEqual(
-        InfoTypeValue.Tag.CreateAssertionMask{ .data = 0 },
+        Tag.CreateAssertionMask{ .data = 0 },
         info_type.tag().CreateAssertion,
     );
 
     info_type = try con.getInfo(.CreateCharacterSet);
     try expectEqual(
-        InfoTypeValue.Tag.CreateCharacterSetMask{ .data = 0 },
+        Tag.CreateCharacterSetMask{ .data = 0 },
         info_type.tag().CreateCharacterSet,
     );
 
     info_type = try con.getInfo(.CreateCollation);
     try expectEqual(
-        InfoTypeValue.Tag.CreateCollationMask{ .data = 0 },
+        Tag.CreateCollationMask{ .data = 0 },
         info_type.tag().CreateCollation,
     );
 
     info_type = try con.getInfo(.CreateDomain);
     try expectEqual(
-        InfoTypeValue.Tag.CreateDomainMask{ .data = 0 },
+        Tag.CreateDomainMask{ .data = 0 },
         info_type.tag().CreateDomain,
     );
 
     info_type = try con.getInfo(.CreateSchema);
     try expectEqual(
-        InfoTypeValue.Tag.CreateSchemaMask{ .data = 3 },
+        Tag.CreateSchemaMask{ .data = 3 },
         info_type.tag().CreateSchema,
     );
 
     info_type = try con.getInfo(.CreateTable);
     try expectEqual(
-        InfoTypeValue.Tag.CreateTableMask{ .data = 9729 },
+        Tag.CreateTableMask{ .data = 9729 },
         info_type.tag().CreateTable,
     );
 
     info_type = try con.getInfo(.CreateTranslation);
     try expectEqual(
-        InfoTypeValue.Tag.CreateTranslationMask{ .data = 0 },
+        Tag.CreateTranslationMask{ .data = 0 },
         info_type.tag().CreateTranslation,
     );
 
     info_type = try con.getInfo(.CursorCommitBehavior);
     try expectEqual(
-        InfoTypeValue.Tag.CursorBehavior.Preserve,
+        Tag.CursorBehavior.Preserve,
         info_type.tag().CursorCommitBehavior,
     );
 
     info_type = try con.getInfo(.CursorRollbackBehavior);
     try expectEqual(
-        InfoTypeValue.Tag.CursorBehavior.Close,
+        Tag.CursorBehavior.Close,
         info_type.tag().CursorRollbackBehavior,
     );
 
     info_type = try con.getInfo(.CursorSensitivity);
     try expectEqual(
-        InfoTypeValue.Tag.CursorSensitivity.Unspecified,
+        Tag.CursorSensitivity.Unspecified,
         info_type.tag().CursorSensitivity,
     );
 
@@ -323,13 +324,13 @@ test ".getInfo/1 returns general information about the connected DBMS" {
 
     info_type = try con.getInfo(.DdlIndex);
     try expectEqual(
-        InfoTypeValue.Tag.DdlIndexMask{ .data = 3 },
+        Tag.DdlIndexMask{ .data = 3 },
         info_type.tag().DdlIndex,
     );
 
     info_type = try con.getInfo(.DefaultTxnIsolation);
     try expectEqual(
-        InfoTypeValue.Tag.DefaultTxnIsolationMask{ .data = 2 },
+        Tag.DefaultTxnIsolationMask{ .data = 2 },
         info_type.tag().DefaultTxnIsolation,
     );
 
@@ -363,61 +364,61 @@ test ".getInfo/1 returns general information about the connected DBMS" {
 
     info_type = try con.getInfo(.DropAssertion);
     try expectEqual(
-        InfoTypeValue.Tag.DropAssertionMask{ .data = 0 },
+        Tag.DropAssertionMask{ .data = 0 },
         info_type.tag().DropAssertion,
     );
 
     info_type = try con.getInfo(.DropCharacterSet);
     try expectEqual(
-        InfoTypeValue.Tag.DropCharacterSetMask{ .data = 0 },
+        Tag.DropCharacterSetMask{ .data = 0 },
         info_type.tag().DropCharacterSet,
     );
 
     info_type = try con.getInfo(.DropCollation);
     try expectEqual(
-        InfoTypeValue.Tag.DropCollationMask{ .data = 0 },
+        Tag.DropCollationMask{ .data = 0 },
         info_type.tag().DropCollation,
     );
 
     info_type = try con.getInfo(.DropDomain);
     try expectEqual(
-        InfoTypeValue.Tag.DropDomainMask{ .data = 0 },
+        Tag.DropDomainMask{ .data = 0 },
         info_type.tag().DropDomain,
     );
 
     info_type = try con.getInfo(.DropSchema);
     try expectEqual(
-        InfoTypeValue.Tag.DropSchemaMask{ .data = 3 },
+        Tag.DropSchemaMask{ .data = 3 },
         info_type.tag().DropSchema,
     );
 
     info_type = try con.getInfo(.DropTable);
     try expectEqual(
-        InfoTypeValue.Tag.DropTableMask{ .data = 1 },
+        Tag.DropTableMask{ .data = 1 },
         info_type.tag().DropTable,
     );
 
     info_type = try con.getInfo(.DropTranslation);
     try expectEqual(
-        InfoTypeValue.Tag.DropTranslationMask{ .data = 0 },
+        Tag.DropTranslationMask{ .data = 0 },
         info_type.tag().DropTranslation,
     );
 
     info_type = try con.getInfo(.DropView);
     try expectEqual(
-        InfoTypeValue.Tag.DropViewMask{ .data = 1 },
+        Tag.DropViewMask{ .data = 1 },
         info_type.tag().DropView,
     );
 
     info_type = try con.getInfo(.DynamicCursorAttributes1);
     try expectEqual(
-        InfoTypeValue.Tag.DynamicCursorAttributes1Mask{ .data = 0 },
+        Tag.DynamicCursorAttributes1Mask{ .data = 0 },
         info_type.tag().DynamicCursorAttributes1,
     );
 
     info_type = try con.getInfo(.DynamicCursorAttributes2);
     try expectEqual(
-        InfoTypeValue.Tag.DynamicCursorAttributes2Mask{ .data = 0 },
+        Tag.DynamicCursorAttributes2Mask{ .data = 0 },
         info_type.tag().DynamicCursorAttributes2,
     );
 
@@ -426,37 +427,37 @@ test ".getInfo/1 returns general information about the connected DBMS" {
 
     info_type = try con.getInfo(.FetchDirection);
     try expectEqual(
-        InfoTypeValue.Tag.FetchDirectionMask{ .data = 255 },
+        Tag.FetchDirectionMask{ .data = 255 },
         info_type.tag().FetchDirection,
     );
 
     info_type = try con.getInfo(.ForwardOnlyCursorAttributes1);
     try expectEqual(
-        InfoTypeValue.Tag.ForwardOnlyCursorAttributes1Mask{ .data = 57345 },
+        Tag.ForwardOnlyCursorAttributes1Mask{ .data = 57345 },
         info_type.tag().ForwardOnlyCursorAttributes1,
     );
 
     info_type = try con.getInfo(.ForwardOnlyCursorAttributes2);
     try expectEqual(
-        InfoTypeValue.Tag.ForwardOnlyCursorAttributes2Mask{ .data = 2179 },
+        Tag.ForwardOnlyCursorAttributes2Mask{ .data = 2179 },
         info_type.tag().ForwardOnlyCursorAttributes2,
     );
 
     info_type = try con.getInfo(.GetdataExtensions);
     try expectEqual(
-        InfoTypeValue.Tag.GetdataExtensionsMask{ .data = 7 },
+        Tag.GetdataExtensionsMask{ .data = 7 },
         info_type.tag().GetdataExtensions,
     );
 
     info_type = try con.getInfo(.GroupBy);
     try expectEqual(
-        InfoTypeValue.Tag.GroupBy.GroupByContainsSelect,
+        Tag.GroupBy.GroupByContainsSelect,
         info_type.tag().GroupBy,
     );
 
     info_type = try con.getInfo(.IdentifierCase);
     try expectEqual(
-        InfoTypeValue.Tag.IdentifierCase.Upper,
+        Tag.IdentifierCase.Upper,
         info_type.tag().IdentifierCase,
     );
 
@@ -465,13 +466,13 @@ test ".getInfo/1 returns general information about the connected DBMS" {
 
     info_type = try con.getInfo(.InfoSchemaViews);
     try expectEqual(
-        InfoTypeValue.Tag.InfoSchemaViewsMask{ .data = 0 },
+        Tag.InfoSchemaViewsMask{ .data = 0 },
         info_type.tag().InfoSchemaViews,
     );
 
     info_type = try con.getInfo(.InsertStatement);
     try expectEqual(
-        InfoTypeValue.Tag.InsertStatementMask{ .data = 7 },
+        Tag.InsertStatementMask{ .data = 7 },
         info_type.tag().InsertStatement,
     );
 
@@ -480,13 +481,13 @@ test ".getInfo/1 returns general information about the connected DBMS" {
 
     info_type = try con.getInfo(.KeysetCursorAttributes1);
     try expectEqual(
-        InfoTypeValue.Tag.KeysetCursorAttributes1Mask{ .data = 990799 },
+        Tag.KeysetCursorAttributes1Mask{ .data = 990799 },
         info_type.tag().KeysetCursorAttributes1,
     );
 
     info_type = try con.getInfo(.KeysetCursorAttributes2);
     try expectEqual(
-        InfoTypeValue.Tag.KeysetCursorAttributes2Mask{ .data = 16395 },
+        Tag.KeysetCursorAttributes2Mask{ .data = 16395 },
         info_type.tag().KeysetCursorAttributes2,
     );
 
@@ -501,7 +502,7 @@ test ".getInfo/1 returns general information about the connected DBMS" {
 
     info_type = try con.getInfo(.LockTypes);
     try expectEqual(
-        InfoTypeValue.Tag.LockTypesMask{ .data = 0 },
+        Tag.LockTypesMask{ .data = 0 },
         info_type.tag().LockTypes,
     );
 
@@ -585,37 +586,37 @@ test ".getInfo/1 returns general information about the connected DBMS" {
 
     info_type = try con.getInfo(.NonNullableColumns);
     try expectEqual(
-        InfoTypeValue.Tag.NonNullableColumns.NonNull,
+        Tag.NonNullableColumns.NonNull,
         info_type.tag().NonNullableColumns,
     );
 
     info_type = try con.getInfo(.NullCollation);
     try expectEqual(
-        InfoTypeValue.Tag.NullCollation.High,
+        Tag.NullCollation.High,
         info_type.tag().NullCollation,
     );
 
     info_type = try con.getInfo(.NumericFunctions);
     try expectEqual(
-        InfoTypeValue.Tag.NumericFunctionsMask{ .data = 16777215 },
+        Tag.NumericFunctionsMask{ .data = 16777215 },
         info_type.tag().NumericFunctions,
     );
 
     info_type = try con.getInfo(.OdbcApiConformance);
     try expectEqual(
-        InfoTypeValue.Tag.OdbcApiConformance.Level2,
+        Tag.OdbcApiConformance.Level2,
         info_type.tag().OdbcApiConformance,
     );
 
     info_type = try con.getInfo(.OdbcSagCliConformance);
     try expectEqual(
-        InfoTypeValue.Tag.OdbcSagCliConformance.Compliant,
+        Tag.OdbcSagCliConformance.Compliant,
         info_type.tag().OdbcSagCliConformance,
     );
 
     info_type = try con.getInfo(.OdbcSqlConformance);
     try expectEqual(
-        InfoTypeValue.Tag.OdbcSqlConformance.Extended,
+        Tag.OdbcSqlConformance.Extended,
         info_type.tag().OdbcSqlConformance,
     );
 
@@ -624,7 +625,7 @@ test ".getInfo/1 returns general information about the connected DBMS" {
 
     info_type = try con.getInfo(.OjCapabilities);
     try expectEqual(
-        InfoTypeValue.Tag.OjCapabilitiesMask{ .data = 127 },
+        Tag.OjCapabilitiesMask{ .data = 127 },
         info_type.tag().OjCapabilities,
     );
 
@@ -639,25 +640,25 @@ test ".getInfo/1 returns general information about the connected DBMS" {
 
     info_type = try con.getInfo(.ParamArrayRowCounts);
     try expectEqual(
-        InfoTypeValue.Tag.ParamArrayRowCounts.NoBatch,
+        Tag.ParamArrayRowCounts.NoBatch,
         info_type.tag().ParamArrayRowCounts,
     );
 
     info_type = try con.getInfo(.ParamArraySelects);
     try expectEqual(
-        InfoTypeValue.Tag.ParamArraySelects.Batch,
+        Tag.ParamArraySelects.Batch,
         info_type.tag().ParamArraySelects,
     );
 
     info_type = try con.getInfo(.PosOperations);
     try expectEqual(
-        InfoTypeValue.Tag.PosOperationsMask{ .data = 31 },
+        Tag.PosOperationsMask{ .data = 31 },
         info_type.tag().PosOperations,
     );
 
     info_type = try con.getInfo(.PositionedStatements);
     try expectEqual(
-        InfoTypeValue.Tag.PositionedStatementsMask{ .data = 7 },
+        Tag.PositionedStatementsMask{ .data = 7 },
         info_type.tag().PositionedStatements,
     );
 
@@ -669,7 +670,7 @@ test ".getInfo/1 returns general information about the connected DBMS" {
 
     info_type = try con.getInfo(.QuotedIdentifierCase);
     try expectEqual(
-        InfoTypeValue.Tag.QuotedIdentifierCase.Sensitive,
+        Tag.QuotedIdentifierCase.Sensitive,
         info_type.tag().QuotedIdentifierCase,
     );
 
@@ -678,19 +679,19 @@ test ".getInfo/1 returns general information about the connected DBMS" {
 
     info_type = try con.getInfo(.SchemaUsage);
     try expectEqual(
-        InfoTypeValue.Tag.SchemaUsageMask{ .data = 31 },
+        Tag.SchemaUsageMask{ .data = 31 },
         info_type.tag().SchemaUsage,
     );
 
     info_type = try con.getInfo(.ScrollConcurrency);
     try expectEqual(
-        InfoTypeValue.Tag.ScrollConcurrencyMask{ .data = 11 },
+        Tag.ScrollConcurrencyMask{ .data = 11 },
         info_type.tag().ScrollConcurrency,
     );
 
     info_type = try con.getInfo(.ScrollOptions);
     try expectEqual(
-        InfoTypeValue.Tag.ScrollOptionsMask{ .data = 19 },
+        Tag.ScrollOptionsMask{ .data = 19 },
         info_type.tag().ScrollOptions,
     );
 
@@ -705,49 +706,49 @@ test ".getInfo/1 returns general information about the connected DBMS" {
 
     info_type = try con.getInfo(.Sql92Predicates);
     try expectEqual(
-        InfoTypeValue.Tag.Sql92PredicatesMask{ .data = 15879 },
+        Tag.Sql92PredicatesMask{ .data = 15879 },
         info_type.tag().Sql92Predicates,
     );
 
     info_type = try con.getInfo(.Sql92ValueExpressions);
     try expectEqual(
-        InfoTypeValue.Tag.Sql92ValueExpressionsMask{ .data = 15 },
+        Tag.Sql92ValueExpressionsMask{ .data = 15 },
         info_type.tag().Sql92ValueExpressions,
     );
 
     info_type = try con.getInfo(.StaticCursorAttributes1);
     try expectEqual(
-        InfoTypeValue.Tag.StaticCursorAttributes1Mask{ .data = 15 },
+        Tag.StaticCursorAttributes1Mask{ .data = 15 },
         info_type.tag().StaticCursorAttributes1,
     );
 
     info_type = try con.getInfo(.StaticCursorAttributes2);
     try expectEqual(
-        InfoTypeValue.Tag.StaticCursorAttributes2Mask{ .data = 131 },
+        Tag.StaticCursorAttributes2Mask{ .data = 131 },
         info_type.tag().StaticCursorAttributes2,
     );
 
     info_type = try con.getInfo(.StaticSensitivity);
     try expectEqual(
-        InfoTypeValue.Tag.StaticSensitivityMask{ .data = 0 },
+        Tag.StaticSensitivityMask{ .data = 0 },
         info_type.tag().StaticSensitivity,
     );
 
     info_type = try con.getInfo(.StringFunctions);
     try expectEqual(
-        InfoTypeValue.Tag.StringFunctionsMask{ .data = 524287 },
+        Tag.StringFunctionsMask{ .data = 524287 },
         info_type.tag().StringFunctions,
     );
 
     info_type = try con.getInfo(.Subqueries);
     try expectEqual(
-        InfoTypeValue.Tag.SubqueriesMask{ .data = 31 },
+        Tag.SubqueriesMask{ .data = 31 },
         info_type.tag().Subqueries,
     );
 
     info_type = try con.getInfo(.SystemFunctions);
     try expectEqual(
-        InfoTypeValue.Tag.SystemFunctionsMask{ .data = 7 },
+        Tag.SystemFunctionsMask{ .data = 7 },
         info_type.tag().SystemFunctions,
     );
 
@@ -756,37 +757,37 @@ test ".getInfo/1 returns general information about the connected DBMS" {
 
     info_type = try con.getInfo(.TimedateAddIntervals);
     try expectEqual(
-        InfoTypeValue.Tag.TimedateAddIntervalsMask{ .data = 511 },
+        Tag.TimedateAddIntervalsMask{ .data = 511 },
         info_type.tag().TimedateAddIntervals,
     );
 
     info_type = try con.getInfo(.TimedateDiffIntervals);
     try expectEqual(
-        InfoTypeValue.Tag.TimedateDiffIntervalsMask{ .data = 511 },
+        Tag.TimedateDiffIntervalsMask{ .data = 511 },
         info_type.tag().TimedateDiffIntervals,
     );
 
     info_type = try con.getInfo(.TimedateFunctions);
     try expectEqual(
-        InfoTypeValue.Tag.TimedateFunctionsMask{ .data = 131071 },
+        Tag.TimedateFunctionsMask{ .data = 131071 },
         info_type.tag().TimedateFunctions,
     );
 
     info_type = try con.getInfo(.TxnCapable);
     try expectEqual(
-        InfoTypeValue.Tag.TxnCapable.All,
+        Tag.TxnCapable.All,
         info_type.tag().TxnCapable,
     );
 
     info_type = try con.getInfo(.TxnIsolationOption);
     try expectEqual(
-        InfoTypeValue.Tag.TxnIsolationOptionMask{ .data = 15 },
+        Tag.TxnIsolationOptionMask{ .data = 15 },
         info_type.tag().TxnIsolationOption,
     );
 
     info_type = try con.getInfo(.Union);
     try expectEqual(
-        InfoTypeValue.Tag.UnionMask{ .data = 3 },
+        Tag.UnionMask{ .data = 3 },
         info_type.tag().Union,
     );
 
