@@ -24,6 +24,7 @@ COMMANDS:
   procedures
   procedure-columns
   info
+  attrs
   benchmark
 
 OPTIONS:
@@ -65,6 +66,8 @@ OPTIONS:
     - [procedures](./docs/commands/procedures)
     - [procedure-columns](./docs/commands/procedure-columns)
     - [info](./docs/commands/info)
+    - [attrs](./docs/commands/attrs)
+        - [env](./docs/commands/attrs#env)
     - [benchmark](./docs/commands/benchmark)
 - [Library](./docs/LIBRARY.md)
 - [Nix](./docs/NIX.md)
