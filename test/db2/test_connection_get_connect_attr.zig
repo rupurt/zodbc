@@ -10,7 +10,7 @@ const attrs = zodbc.odbc.attributes;
 
 const AttributeValue = attrs.ConnectionAttributeValue;
 
-test "getConnectAttr/3 can retrieve the current item values for disconnected connections" {
+test "getConnectAttr/3 can retrieve the current values for disconnected connections" {
     const env_con = try zodbc.testing.connection();
     defer {
         env_con.con.deinit();
@@ -53,7 +53,7 @@ test "getConnectAttr/3 can retrieve the current item values for disconnected con
     );
 }
 
-test "getConnectAttr/3 can retrieve connected items" {
+test "getConnectAttr/3 can retrieve connected current values" {
     const env_con = try zodbc.testing.connection();
     defer {
         env_con.con.deinit();
@@ -158,7 +158,7 @@ test "getConnectAttr/3 can retrieve connected items" {
     );
 }
 
-test "getConnectAttr/3 can retrieve Db2 specific items" {
+test "getConnectAttr/3 can retrieve Db2 specific values" {
     const env_con = try zodbc.testing.connection();
     defer {
         env_con.con.deinit();

@@ -18,6 +18,10 @@ pub fn build(b: *std.Build) void {
     const odbc_mod = b.addModule("odbc", .{
         .root_source_file = .{ .path = "src/odbc/root.zig" },
     });
+    const fmt_mod = b.addModule("fmt", .{
+        .root_source_file = .{ .path = "src/fmt/root.zig" },
+        .imports = &.{},
+    });
     const core_mod = b.addModule("core", .{
         .root_source_file = .{ .path = "src/core/root.zig" },
         .imports = &.{
@@ -41,6 +45,7 @@ pub fn build(b: *std.Build) void {
         .root_source_file = .{ .path = "src/lib.zig" },
         .imports = &.{
             .{ .name = "odbc", .module = odbc_mod },
+            .{ .name = "fmt", .module = fmt_mod },
             .{ .name = "core", .module = core_mod },
             .{ .name = "pool", .module = pool_mod },
             .{ .name = "testing", .module = testing_mod },
@@ -104,6 +109,16 @@ pub fn build(b: *std.Build) void {
     // ----------------------------
     // Tests
     // ----------------------------
+    const lib_odbc_unit_tests = b.addTest(.{
+        .name = "[LIB ODBC UNIT]",
+        .test_runner = "test_runner.zig",
+        .root_source_file = .{ .path = "src/odbc/test_unit.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
+    lib_odbc_unit_tests.linkLibC();
+    const run_lib_odbc_unit_tests = b.addRunArtifact(lib_odbc_unit_tests);
+
     const lib_core_unit_tests = b.addTest(.{
         .name = "[LIB CORE UNIT]",
         .test_runner = "test_runner.zig",
@@ -149,6 +164,7 @@ pub fn build(b: *std.Build) void {
     const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
 
     const test_unit_step = b.step("test:unit", "Run unit tests");
+    test_unit_step.dependOn(&run_lib_odbc_unit_tests.step);
     test_unit_step.dependOn(&run_lib_core_unit_tests.step);
     test_unit_step.dependOn(&run_lib_pool_unit_tests.step);
     test_unit_step.dependOn(&run_lib_unit_tests.step);

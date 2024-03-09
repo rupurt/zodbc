@@ -1,3 +1,4 @@
+pub const bitmask = @import("bitmask.zig");
 pub const types = @import("types.zig");
 pub const attributes = @import("attributes.zig");
 pub const info = @import("info.zig");

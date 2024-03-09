@@ -5,8 +5,11 @@ const Environment = core.Environment;
 const Connection = core.Connection;
 const Statement = core.Statement;
 const Rowset = core.Rowset;
+
 const odbc = @import("odbc");
 const types = odbc.types;
+const attrs = odbc.attributes;
+const ConnectAttributeValue = attrs.ConnectionAttributeValue;
 
 const messages = @import("messages.zig");
 const ParentMailbox = messages.ParentMailbox;
@@ -47,21 +50,51 @@ pub fn deinit(self: Self) void {
     self.conn.deinit();
 }
 
+pub fn initConnection(self: *Self) !void {
+    for (self.workers.items) |*worker| {
+        try worker.spawn(self.allocator, &self.mailbox);
+        try worker.post(.{ .initConnection = .{ .env = self.env } });
+    }
+    var n_initialized: usize = 0;
+    while (n_initialized < self.n_workers) {
+        switch (self.mailbox.dequeue()) {
+            .initConnection => n_initialized += 1,
+            .stop => @panic("initConnection: unexpected stop message"),
+            else => {},
+        }
+    }
+}
+
+pub fn setConnectAttr(self: *Self, attr_value: ConnectAttributeValue) !void {
+    for (self.workers.items) |*worker| {
+        try worker.spawn(self.allocator, &self.mailbox);
+        try worker.post(.{ .setConnectAttr = .{
+            .attr_value = attr_value,
+        } });
+    }
+    var n_set: usize = 0;
+    while (n_set < self.n_workers) {
+        switch (self.mailbox.dequeue()) {
+            .setConnectAttr => n_set += 1,
+            .stop => @panic("setConnectAttr: unexpected stop message"),
+            else => {},
+        }
+    }
+}
+
 pub fn connectWithString(self: *Self, dsn: []const u8) !void {
     try self.conn.connectWithString(dsn);
     const stmt = try Statement.init(self.conn);
     self.stmt = stmt;
     for (self.workers.items) |*worker| {
         try worker.spawn(self.allocator, &self.mailbox);
-        try worker.post(.{ .connect = .{
-            .env = self.env,
-            .dsn = dsn,
-        } });
+        try worker.post(.{ .connectWithString = .{ .dsn = dsn } });
     }
     var n_connected: usize = 0;
     while (n_connected < self.n_workers) {
         switch (self.mailbox.dequeue()) {
-            .connect => n_connected += 1,
+            .connectWithString => n_connected += 1,
+            .stop => @panic("connectionWithString: unexpected stop message"),
             else => {},
         }
     }
@@ -78,6 +111,7 @@ pub fn prepare(self: *Self, statement_str: []const u8) !void {
     while (n_prepared < self.n_workers) {
         switch (self.mailbox.dequeue()) {
             .prepare => n_prepared += 1,
+            .stop => @panic("prepare: unexpected stop message"),
             else => {},
         }
     }
@@ -92,6 +126,7 @@ pub fn execute(self: *Self) !void {
     while (n_executed < self.n_workers) {
         switch (self.mailbox.dequeue()) {
             .execute => n_executed += 1,
+            .stop => @panic("execute: unexpected stop message"),
             else => {},
         }
     }
@@ -123,10 +158,10 @@ const WorkerBatchReader = struct {
     stmt: *Statement,
     workers: *WorkerList,
     mailbox: *ParentMailbox,
-    fetch_array_size: usize,
-    offset: usize,
     column_descriptions: []types.ColDescription,
     rowsets: []Rowset,
+    fetch_array_size: usize,
+    offset: usize,
     has_more_results: bool,
 
     pub fn init(
@@ -145,7 +180,7 @@ const WorkerBatchReader = struct {
         }
         const rowsets = try allocator.alloc(Rowset, workers.items.len);
         for (0..rowsets.len) |i| {
-            const rowset = Rowset.init(column_descriptions);
+            const rowset = try Rowset.init(allocator, column_descriptions, fetch_array_size);
             rowsets[i] = rowset;
         }
 
@@ -154,9 +189,9 @@ const WorkerBatchReader = struct {
             .stmt = stmt,
             .workers = workers,
             .mailbox = mailbox,
-            .fetch_array_size = fetch_array_size,
             .column_descriptions = column_descriptions,
             .rowsets = rowsets,
+            .fetch_array_size = fetch_array_size,
             .offset = 0,
             .has_more_results = true,
         };
@@ -168,13 +203,6 @@ const WorkerBatchReader = struct {
     }
 
     pub fn next(self: *WorkerBatchReader) ?Rowset {
-        // if (self.offset == 0) {
-        //     self.offset += self.fetch_array_size;
-        //     return self.rowsets[0];
-        // } else {
-        //     return null;
-        // }
-
         var rowset: ?Rowset = null;
 
         while (self.has_more_results) {
@@ -182,6 +210,18 @@ const WorkerBatchReader = struct {
                 self.offset += self.fetch_array_size;
                 self.has_more_results = false;
                 rowset = self.rowsets[0];
+            }
+            for (self.workers.items) |*worker| {
+                worker.post(.{
+                    .fetchScroll = .{
+                        // .orientation = .ABSOLUTE,
+                        .orientation = .NEXT,
+                        .offset = self.offset,
+                    },
+                }) catch {
+                    std.debug.print("WorkerBatchReader.next: worker.post failed\n", .{});
+                };
+                self.offset += self.fetch_array_size;
             }
         }
 

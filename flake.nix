@@ -35,11 +35,6 @@
         overlays = [
           zig-overlay.overlays.default
           odbc-drivers.overlay
-          # WebUI fails to build on Linux with unexported symbol
-          # - emcc: error: undefined exported symbol: "__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE9__grow_byEmmmmmm" [-Wundefined] [-Werror]
-          # (final: prev: {
-          #   tree-sitter = prev.tree-sitter.override {webUISupport = true;};
-          # })
         ];
       };
       db2Driver =
@@ -50,9 +45,17 @@
         if pkgs.stdenv.isLinux
         then "${pkgs.odbc-driver-pkgs.postgres-odbc-driver}/lib/psqlodbca.so"
         else "${pkgs.odbc-driver-pkgs.postgres-odbc-driver}/lib/psqlodbca.dylib";
+      # zigPkg = pkgs.zig.overrideAttrs {
+      #   version = "0.12.0";
+      # };
     in {
       # packages exported by the flake
-      packages = {};
+      packages = rec {
+        zodbc = pkgs.callPackage ./nix/packages/zodbc.nix {
+          inherit pkgs;
+        };
+        default = zodbc;
+      };
 
       # nix run
       apps = {};
@@ -67,6 +70,7 @@
         buildInputs = [
           pkgs.pkg-config
           pkgs.zigpkgs.master
+          # zigPkg
           pkgs.unixODBC
           pkgs.arrow-cpp
         ];
