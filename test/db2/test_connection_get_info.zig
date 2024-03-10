@@ -10,9 +10,8 @@ const zodbc = @import("zodbc");
 const info = zodbc.odbc.info;
 
 const InfoTypeValue = info.InfoTypeValue;
-const Tag = info.InfoTypeValue.Tag;
 
-test "getInfo/1 returns general information about the connected DBMS" {
+test "getInfo/3 returns general information about the connected DBMS" {
     const env_con = try zodbc.testing.connection();
     defer {
         env_con.con.deinit();
@@ -23,777 +22,1087 @@ test "getInfo/1 returns general information about the connected DBMS" {
     defer allocator.free(con_str);
     try con.connectWithString(con_str);
 
-    var info_type: InfoTypeValue = undefined;
+    var odbc_buf: [2048]u8 = undefined;
 
-    info_type = try con.getInfo(.AccessibleProcedures);
-    try expectEqual(false, info_type.tag().AccessibleProcedures);
+    @memset(odbc_buf[0..], 0);
+    const accessible_procedures_info = try con.getInfo(allocator, .AccessibleProcedures, odbc_buf[0..]);
+    defer accessible_procedures_info.deinit(allocator);
+    try expectEqual(false, accessible_procedures_info.AccessibleProcedures);
 
-    info_type = try con.getInfo(.AccessibleTables);
-    try expectEqual(false, info_type.tag().AccessibleTables);
+    @memset(odbc_buf[0..], 0);
+    const accessible_tables_info = try con.getInfo(allocator, .AccessibleTables, odbc_buf[0..]);
+    defer accessible_tables_info.deinit(allocator);
+    try expectEqual(false, accessible_tables_info.AccessibleTables);
 
-    info_type = try con.getInfo(.ActiveEnvironments);
-    try expectEqual(1, info_type.tag().ActiveEnvironments);
+    @memset(odbc_buf[0..], 0);
+    const active_environments_info = try con.getInfo(allocator, .ActiveEnvironments, odbc_buf[0..]);
+    defer active_environments_info.deinit(allocator);
+    try expectEqual(1, active_environments_info.ActiveEnvironments);
 
-    info_type = try con.getInfo(.AggregateFunctions);
+    @memset(odbc_buf[0..], 0);
+    const aggregate_functions_info = try con.getInfo(allocator, .AggregateFunctions, odbc_buf[0..]);
+    defer aggregate_functions_info.deinit(allocator);
     try expectEqual(
-        Tag.AggregateFunctionsMask{ .data = 64 },
-        info_type.tag().AggregateFunctions,
+        InfoTypeValue.AggregateFunctionsMask{ .data = 64 },
+        aggregate_functions_info.AggregateFunctions,
     );
 
-    info_type = try con.getInfo(.AlterDomain);
+    @memset(odbc_buf[0..], 0);
+    const alter_domain_info = try con.getInfo(allocator, .AlterDomain, odbc_buf[0..]);
+    defer alter_domain_info.deinit(allocator);
     try expectEqual(
-        Tag.AlterDomainMask{ .data = 0 },
-        info_type.tag().AlterDomain,
+        InfoTypeValue.AlterDomainMask{ .data = 0 },
+        alter_domain_info.AlterDomain,
     );
 
-    info_type = try con.getInfo(.AlterTable);
+    @memset(odbc_buf[0..], 0);
+    const alter_table_info = try con.getInfo(allocator, .AlterTable, odbc_buf[0..]);
+    defer alter_table_info.deinit(allocator);
     try expectEqual(
-        Tag.AlterTableMask{ .data = 61545 },
-        info_type.tag().AlterTable,
+        InfoTypeValue.AlterTableMask{ .data = 61545 },
+        alter_table_info.AlterTable,
     );
 
-    info_type = try con.getInfo(.BatchRowCount);
+    @memset(odbc_buf[0..], 0);
+    const batch_row_count_info = try con.getInfo(allocator, .BatchRowCount, odbc_buf[0..]);
+    defer batch_row_count_info.deinit(allocator);
     try expectEqual(
-        Tag.BatchRowCountMask{ .data = 4 },
-        info_type.tag().BatchRowCount,
+        InfoTypeValue.BatchRowCountMask{ .data = 4 },
+        batch_row_count_info.BatchRowCount,
     );
 
-    info_type = try con.getInfo(.BatchSupport);
+    @memset(odbc_buf[0..], 0);
+    const batch_support_info = try con.getInfo(allocator, .BatchSupport, odbc_buf[0..]);
+    defer batch_support_info.deinit(allocator);
     try expectEqual(
-        Tag.BatchSupportMask{ .data = 7 },
-        info_type.tag().BatchSupport,
+        InfoTypeValue.BatchSupportMask{ .data = 7 },
+        batch_support_info.BatchSupport,
     );
 
-    info_type = try con.getInfo(.BookmarkPersistence);
+    @memset(odbc_buf[0..], 0);
+    const bookmark_persistence_info = try con.getInfo(allocator, .BookmarkPersistence, odbc_buf[0..]);
+    defer bookmark_persistence_info.deinit(allocator);
     try expectEqual(
-        Tag.BookmarkPersistenceMask{ .data = 90 },
-        info_type.tag().BookmarkPersistence,
+        InfoTypeValue.BookmarkPersistenceMask{ .data = 90 },
+        bookmark_persistence_info.BookmarkPersistence,
     );
 
-    info_type = try con.getInfo(.CatalogLocation);
-    try expectEqual(0, info_type.tag().CatalogLocation);
+    @memset(odbc_buf[0..], 0);
+    const catalog_location_info = try con.getInfo(allocator, .CatalogLocation, odbc_buf[0..]);
+    defer catalog_location_info.deinit(allocator);
+    try expectEqual(0, catalog_location_info.CatalogLocation);
 
-    info_type = try con.getInfo(.CatalogName);
-    try expectEqual(false, info_type.tag().CatalogName);
+    @memset(odbc_buf[0..], 0);
+    const catalog_name_info = try con.getInfo(allocator, .CatalogName, odbc_buf[0..]);
+    defer catalog_name_info.deinit(allocator);
+    try expectEqual(false, catalog_name_info.CatalogName);
 
-    // info_type = try con.getInfo(.CatalogNameSeparator);
-    // try expectEqualSlices(u8, "."[0..1], info_type.tag().CatalogNameSeparator);
+    @memset(odbc_buf[0..], 0);
+    const catalog_name_separator_info = try con.getInfo(allocator, .CatalogNameSeparator, odbc_buf[0..]);
+    defer catalog_name_separator_info.deinit(allocator);
+    try expectEqualStrings(".", catalog_name_separator_info.CatalogNameSeparator);
 
-    info_type = try con.getInfo(.CatalogTerm);
-    try expectEqualStrings("", info_type.tag().CatalogTerm);
+    @memset(odbc_buf[0..], 0);
+    const catalog_term_info = try con.getInfo(allocator, .CatalogTerm, odbc_buf[0..]);
+    defer catalog_term_info.deinit(allocator);
+    try expectEqualStrings("", catalog_term_info.CatalogTerm);
 
-    info_type = try con.getInfo(.CatalogUsage);
+    @memset(odbc_buf[0..], 0);
+    const catalog_usage_info = try con.getInfo(allocator, .CatalogUsage, odbc_buf[0..]);
+    defer catalog_usage_info.deinit(allocator);
     try expectEqual(
-        Tag.CatalogUsageMask{ .data = 0 },
-        info_type.tag().CatalogUsage,
+        InfoTypeValue.CatalogUsageMask{ .data = 0 },
+        catalog_usage_info.CatalogUsage,
     );
 
-    info_type = try con.getInfo(.CollationSeq);
-    try expectEqualStrings("", info_type.tag().CollationSeq);
+    @memset(odbc_buf[0..], 0);
+    const collation_seq_info = try con.getInfo(allocator, .CollationSeq, odbc_buf[0..]);
+    defer collation_seq_info.deinit(allocator);
+    try expectEqualStrings("", collation_seq_info.CollationSeq);
 
-    info_type = try con.getInfo(.ColumnAlias);
-    try expectEqual(true, info_type.tag().ColumnAlias);
+    @memset(odbc_buf[0..], 0);
+    const column_alias_info = try con.getInfo(allocator, .ColumnAlias, odbc_buf[0..]);
+    defer column_alias_info.deinit(allocator);
+    try expectEqual(true, column_alias_info.ColumnAlias);
 
-    // info_type = try con.getInfo(.ConcatNullBehavior);
-    // try expectEqual(
-    //     .{'Y'},
-    //     info_type.ConcatNullBehavior,
-    // );
-
-    info_type = try con.getInfo(.ConvertBigint);
+    @memset(odbc_buf[0..], 0);
+    const concat_null_behavior_info = try con.getInfo(allocator, .ConcatNullBehavior, odbc_buf[0..]);
+    defer concat_null_behavior_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertBigintMask{ .data = 0 },
-        info_type.tag().ConvertBigint,
+        InfoTypeValue.ConcatNullBehavior.Null,
+        concat_null_behavior_info.ConcatNullBehavior,
     );
 
-    info_type = try con.getInfo(.ConvertBinary);
+    @memset(odbc_buf[0..], 0);
+    const convert_bigint_info = try con.getInfo(allocator, .ConvertBigint, odbc_buf[0..]);
+    defer convert_bigint_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertBinaryMask{ .data = 0 },
-        info_type.tag().ConvertBinary,
+        InfoTypeValue.ConvertBigintMask{ .data = 0 },
+        convert_bigint_info.ConvertBigint,
     );
 
-    info_type = try con.getInfo(.ConvertBit);
+    @memset(odbc_buf[0..], 0);
+    const convert_binary_info = try con.getInfo(allocator, .ConvertBinary, odbc_buf[0..]);
+    defer convert_binary_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertBitMask{ .data = 0 },
-        info_type.tag().ConvertBit,
+        InfoTypeValue.ConvertBinaryMask{ .data = 0 },
+        convert_binary_info.ConvertBinary,
     );
 
-    info_type = try con.getInfo(.ConvertChar);
+    @memset(odbc_buf[0..], 0);
+    const convert_bit_info = try con.getInfo(allocator, .ConvertBit, odbc_buf[0..]);
+    defer convert_bit_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertCharMask{ .data = 129 },
-        info_type.tag().ConvertChar,
+        InfoTypeValue.ConvertBitMask{ .data = 0 },
+        convert_bit_info.ConvertBit,
     );
 
-    info_type = try con.getInfo(.ConvertDate);
+    @memset(odbc_buf[0..], 0);
+    const convert_char_info = try con.getInfo(allocator, .ConvertChar, odbc_buf[0..]);
+    defer convert_char_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertDateMask{ .data = 1 },
-        info_type.tag().ConvertDate,
+        InfoTypeValue.ConvertCharMask{ .data = 129 },
+        convert_char_info.ConvertChar,
     );
 
-    info_type = try con.getInfo(.ConvertDecimal);
+    @memset(odbc_buf[0..], 0);
+    const convert_date_info = try con.getInfo(allocator, .ConvertDate, odbc_buf[0..]);
+    defer convert_date_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertDecimalMask{ .data = 129 },
-        info_type.tag().ConvertDecimal,
+        InfoTypeValue.ConvertDateMask{ .data = 1 },
+        convert_date_info.ConvertDate,
     );
 
-    info_type = try con.getInfo(.ConvertDouble);
+    @memset(odbc_buf[0..], 0);
+    const convert_decimal_info = try con.getInfo(allocator, .ConvertDecimal, odbc_buf[0..]);
+    defer convert_decimal_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertDoubleMask{ .data = 129 },
-        info_type.tag().ConvertDouble,
+        InfoTypeValue.ConvertDecimalMask{ .data = 129 },
+        convert_decimal_info.ConvertDecimal,
     );
 
-    info_type = try con.getInfo(.ConvertFloat);
+    @memset(odbc_buf[0..], 0);
+    const convert_double_info = try con.getInfo(allocator, .ConvertDouble, odbc_buf[0..]);
+    defer convert_double_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertFloatMask{ .data = 129 },
-        info_type.tag().ConvertFloat,
+        InfoTypeValue.ConvertDoubleMask{ .data = 129 },
+        convert_double_info.ConvertDouble,
     );
 
-    info_type = try con.getInfo(.ConvertInteger);
+    @memset(odbc_buf[0..], 0);
+    const convert_float_info = try con.getInfo(allocator, .ConvertFloat, odbc_buf[0..]);
+    defer convert_float_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertIntegerMask{ .data = 129 },
-        info_type.tag().ConvertInteger,
+        InfoTypeValue.ConvertFloatMask{ .data = 129 },
+        convert_float_info.ConvertFloat,
     );
 
-    info_type = try con.getInfo(.ConvertIntervalDayTime);
+    @memset(odbc_buf[0..], 0);
+    const convert_integer_info = try con.getInfo(allocator, .ConvertInteger, odbc_buf[0..]);
+    defer convert_integer_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertIntervalDayTimeMask{ .data = 0 },
-        info_type.tag().ConvertIntervalDayTime,
+        InfoTypeValue.ConvertIntegerMask{ .data = 129 },
+        convert_integer_info.ConvertInteger,
     );
 
-    info_type = try con.getInfo(.ConvertIntervalYearMonth);
+    @memset(odbc_buf[0..], 0);
+    const convert_interval_day_time_info = try con.getInfo(allocator, .ConvertIntervalDayTime, odbc_buf[0..]);
+    defer convert_interval_day_time_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertIntervalYearMonthMask{ .data = 0 },
-        info_type.tag().ConvertIntervalYearMonth,
+        InfoTypeValue.ConvertIntervalDayTimeMask{ .data = 0 },
+        convert_interval_day_time_info.ConvertIntervalDayTime,
     );
 
-    info_type = try con.getInfo(.ConvertLongvarbinary);
+    @memset(odbc_buf[0..], 0);
+    const convert_interval_year_month_info = try con.getInfo(allocator, .ConvertIntervalYearMonth, odbc_buf[0..]);
+    defer convert_interval_year_month_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertLongvarbinaryMask{ .data = 0 },
-        info_type.tag().ConvertLongvarbinary,
+        InfoTypeValue.ConvertIntervalYearMonthMask{ .data = 0 },
+        convert_interval_year_month_info.ConvertIntervalYearMonth,
     );
 
-    info_type = try con.getInfo(.ConvertLongvarchar);
+    @memset(odbc_buf[0..], 0);
+    const convert_longvarbinary_info = try con.getInfo(allocator, .ConvertLongvarbinary, odbc_buf[0..]);
+    defer convert_longvarbinary_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertLongvarcharMask{ .data = 0 },
-        info_type.tag().ConvertLongvarchar,
+        InfoTypeValue.ConvertLongvarbinaryMask{ .data = 0 },
+        convert_longvarbinary_info.ConvertLongvarbinary,
     );
 
-    info_type = try con.getInfo(.ConvertNumeric);
+    @memset(odbc_buf[0..], 0);
+    const convert_longvarchar_info = try con.getInfo(allocator, .ConvertLongvarchar, odbc_buf[0..]);
+    defer convert_longvarchar_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertNumericMask{ .data = 129 },
-        info_type.tag().ConvertNumeric,
+        InfoTypeValue.ConvertLongvarcharMask{ .data = 0 },
+        convert_longvarchar_info.ConvertLongvarchar,
     );
 
-    info_type = try con.getInfo(.ConvertReal);
+    @memset(odbc_buf[0..], 0);
+    const convert_numeric_info = try con.getInfo(allocator, .ConvertNumeric, odbc_buf[0..]);
+    defer convert_numeric_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertRealMask{ .data = 0 },
-        info_type.tag().ConvertReal,
+        InfoTypeValue.ConvertNumericMask{ .data = 129 },
+        convert_numeric_info.ConvertNumeric,
     );
 
-    info_type = try con.getInfo(.ConvertSmallint);
+    @memset(odbc_buf[0..], 0);
+    const convert_real_info = try con.getInfo(allocator, .ConvertReal, odbc_buf[0..]);
+    defer convert_real_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertSmallintMask{ .data = 129 },
-        info_type.tag().ConvertSmallint,
+        InfoTypeValue.ConvertRealMask{ .data = 0 },
+        convert_real_info.ConvertReal,
     );
 
-    info_type = try con.getInfo(.ConvertTime);
+    @memset(odbc_buf[0..], 0);
+    const convert_smallint_info = try con.getInfo(allocator, .ConvertSmallint, odbc_buf[0..]);
+    defer convert_smallint_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertTimeMask{ .data = 1 },
-        info_type.tag().ConvertTime,
+        InfoTypeValue.ConvertSmallintMask{ .data = 129 },
+        convert_smallint_info.ConvertSmallint,
     );
 
-    info_type = try con.getInfo(.ConvertTimestamp);
+    @memset(odbc_buf[0..], 0);
+    const convert_time_info = try con.getInfo(allocator, .ConvertTime, odbc_buf[0..]);
+    defer convert_time_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertTimestampMask{ .data = 1 },
-        info_type.tag().ConvertTimestamp,
+        InfoTypeValue.ConvertTimeMask{ .data = 1 },
+        convert_time_info.ConvertTime,
     );
 
-    info_type = try con.getInfo(.ConvertTinyint);
+    @memset(odbc_buf[0..], 0);
+    const convert_timestamp_info = try con.getInfo(allocator, .ConvertTimestamp, odbc_buf[0..]);
+    defer convert_timestamp_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertTinyintMask{ .data = 0 },
-        info_type.tag().ConvertTinyint,
+        InfoTypeValue.ConvertTimestampMask{ .data = 1 },
+        convert_timestamp_info.ConvertTimestamp,
     );
 
-    info_type = try con.getInfo(.ConvertVarbinary);
+    @memset(odbc_buf[0..], 0);
+    const convert_tinyint_info = try con.getInfo(allocator, .ConvertTinyint, odbc_buf[0..]);
+    defer convert_tinyint_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertVarbinaryMask{ .data = 0 },
-        info_type.tag().ConvertVarbinary,
+        InfoTypeValue.ConvertTinyintMask{ .data = 0 },
+        convert_tinyint_info.ConvertTinyint,
     );
 
-    info_type = try con.getInfo(.ConvertVarchar);
+    @memset(odbc_buf[0..], 0);
+    const convert_varbinary_info = try con.getInfo(allocator, .ConvertVarbinary, odbc_buf[0..]);
+    defer convert_varbinary_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertVarcharMask{ .data = 128 },
-        info_type.tag().ConvertVarchar,
+        InfoTypeValue.ConvertVarbinaryMask{ .data = 0 },
+        convert_varbinary_info.ConvertVarbinary,
     );
 
-    info_type = try con.getInfo(.ConvertFunctions);
+    @memset(odbc_buf[0..], 0);
+    const convert_varchar_info = try con.getInfo(allocator, .ConvertVarchar, odbc_buf[0..]);
+    defer convert_varchar_info.deinit(allocator);
     try expectEqual(
-        Tag.ConvertFunctionsMask{ .data = 3 },
-        info_type.tag().ConvertFunctions,
+        InfoTypeValue.ConvertVarcharMask{ .data = 128 },
+        convert_varchar_info.ConvertVarchar,
     );
 
-    info_type = try con.getInfo(.CorrelationName);
+    @memset(odbc_buf[0..], 0);
+    const convert_functions_info = try con.getInfo(allocator, .ConvertFunctions, odbc_buf[0..]);
+    defer convert_functions_info.deinit(allocator);
     try expectEqual(
-        Tag.CorrelationName.Any,
-        info_type.tag().CorrelationName,
+        InfoTypeValue.ConvertFunctionsMask{ .data = 3 },
+        convert_functions_info.ConvertFunctions,
     );
 
-    info_type = try con.getInfo(.CreateAssertion);
+    @memset(odbc_buf[0..], 0);
+    const correlation_name_info = try con.getInfo(allocator, .CorrelationName, odbc_buf[0..]);
+    defer correlation_name_info.deinit(allocator);
     try expectEqual(
-        Tag.CreateAssertionMask{ .data = 0 },
-        info_type.tag().CreateAssertion,
+        InfoTypeValue.CorrelationName.Any,
+        correlation_name_info.CorrelationName,
     );
 
-    info_type = try con.getInfo(.CreateCharacterSet);
+    @memset(odbc_buf[0..], 0);
+    const create_assertion_info = try con.getInfo(allocator, .CreateAssertion, odbc_buf[0..]);
+    defer create_assertion_info.deinit(allocator);
     try expectEqual(
-        Tag.CreateCharacterSetMask{ .data = 0 },
-        info_type.tag().CreateCharacterSet,
+        InfoTypeValue.CreateAssertionMask{ .data = 0 },
+        create_assertion_info.CreateAssertion,
     );
 
-    info_type = try con.getInfo(.CreateCollation);
+    @memset(odbc_buf[0..], 0);
+    const create_character_set_info = try con.getInfo(allocator, .CreateCharacterSet, odbc_buf[0..]);
+    defer create_character_set_info.deinit(allocator);
     try expectEqual(
-        Tag.CreateCollationMask{ .data = 0 },
-        info_type.tag().CreateCollation,
+        InfoTypeValue.CreateCharacterSetMask{ .data = 0 },
+        create_character_set_info.CreateCharacterSet,
     );
 
-    info_type = try con.getInfo(.CreateDomain);
+    @memset(odbc_buf[0..], 0);
+    const create_collation_info = try con.getInfo(allocator, .CreateCollation, odbc_buf[0..]);
+    defer create_collation_info.deinit(allocator);
     try expectEqual(
-        Tag.CreateDomainMask{ .data = 0 },
-        info_type.tag().CreateDomain,
+        InfoTypeValue.CreateCollationMask{ .data = 0 },
+        create_collation_info.CreateCollation,
     );
 
-    info_type = try con.getInfo(.CreateSchema);
+    @memset(odbc_buf[0..], 0);
+    const create_domain_info = try con.getInfo(allocator, .CreateDomain, odbc_buf[0..]);
+    defer create_domain_info.deinit(allocator);
     try expectEqual(
-        Tag.CreateSchemaMask{ .data = 3 },
-        info_type.tag().CreateSchema,
+        InfoTypeValue.CreateDomainMask{ .data = 0 },
+        create_domain_info.CreateDomain,
     );
 
-    info_type = try con.getInfo(.CreateTable);
+    @memset(odbc_buf[0..], 0);
+    const create_schema_info = try con.getInfo(allocator, .CreateSchema, odbc_buf[0..]);
+    defer create_schema_info.deinit(allocator);
     try expectEqual(
-        Tag.CreateTableMask{ .data = 9729 },
-        info_type.tag().CreateTable,
+        InfoTypeValue.CreateSchemaMask{ .data = 3 },
+        create_schema_info.CreateSchema,
     );
 
-    info_type = try con.getInfo(.CreateTranslation);
+    @memset(odbc_buf[0..], 0);
+    const create_table_info = try con.getInfo(allocator, .CreateTable, odbc_buf[0..]);
+    defer create_table_info.deinit(allocator);
     try expectEqual(
-        Tag.CreateTranslationMask{ .data = 0 },
-        info_type.tag().CreateTranslation,
+        InfoTypeValue.CreateTableMask{ .data = 9729 },
+        create_table_info.CreateTable,
     );
 
-    info_type = try con.getInfo(.CursorCommitBehavior);
+    @memset(odbc_buf[0..], 0);
+    const create_translation_info = try con.getInfo(allocator, .CreateTranslation, odbc_buf[0..]);
+    defer create_translation_info.deinit(allocator);
     try expectEqual(
-        Tag.CursorBehavior.Preserve,
-        info_type.tag().CursorCommitBehavior,
+        InfoTypeValue.CreateTranslationMask{ .data = 0 },
+        create_translation_info.CreateTranslation,
     );
 
-    info_type = try con.getInfo(.CursorRollbackBehavior);
+    @memset(odbc_buf[0..], 0);
+    const cursor_commit_behavior_info = try con.getInfo(allocator, .CursorCommitBehavior, odbc_buf[0..]);
+    defer cursor_commit_behavior_info.deinit(allocator);
     try expectEqual(
-        Tag.CursorBehavior.Close,
-        info_type.tag().CursorRollbackBehavior,
+        InfoTypeValue.CursorBehavior.Preserve,
+        cursor_commit_behavior_info.CursorCommitBehavior,
     );
 
-    info_type = try con.getInfo(.CursorSensitivity);
+    @memset(odbc_buf[0..], 0);
+    const cursor_rollback_behavior_info = try con.getInfo(allocator, .CursorRollbackBehavior, odbc_buf[0..]);
+    defer cursor_rollback_behavior_info.deinit(allocator);
     try expectEqual(
-        Tag.CursorSensitivity.Unspecified,
-        info_type.tag().CursorSensitivity,
+        InfoTypeValue.CursorBehavior.Close,
+        cursor_rollback_behavior_info.CursorRollbackBehavior,
     );
 
-    info_type = try con.getInfo(.DataSourceName);
-    try expectEqualStrings("", info_type.tag().DataSourceName);
-
-    info_type = try con.getInfo(.DataSourceReadOnly);
+    @memset(odbc_buf[0..], 0);
+    const cursor_sensitivity_info = try con.getInfo(allocator, .CursorSensitivity, odbc_buf[0..]);
+    defer cursor_sensitivity_info.deinit(allocator);
     try expectEqual(
-        false,
-        info_type.tag().DataSourceReadOnly,
+        InfoTypeValue.CursorSensitivity.Unspecified,
+        cursor_sensitivity_info.CursorSensitivity,
     );
 
-    info_type = try con.getInfo(.DatabaseName);
-    try expectEqualSlices(u8, "TESTDB"[0..6], info_type.tag().DatabaseName);
+    @memset(odbc_buf[0..], 0);
+    const data_source_name_info = try con.getInfo(allocator, .DataSourceName, odbc_buf[0..]);
+    defer data_source_name_info.deinit(allocator);
+    try expectEqualStrings("", data_source_name_info.DataSourceName);
 
-    // TODO:
-    // - what is this returning?
-    // - don't understand "2/IL"
-    // - seems like the string handling logic isn't correct yet
-    // info_type = try con.getInfo(.DbmsName);
-    // std.debug.print("DbmsName: {s}|\n", .{info_type.tag().DbmsName});
-    // std.debug.print("DbmsName: {}|\n", .{info_type.tag()});
-    // try expectEqualStrings("", info_type.tag().DbmsName);
+    @memset(odbc_buf[0..], 0);
+    const data_source_read_only_info = try con.getInfo(allocator, .DataSourceReadOnly, odbc_buf[0..]);
+    defer data_source_read_only_info.deinit(allocator);
+    try expectEqual(false, data_source_read_only_info.DataSourceReadOnly);
 
-    // info_type = try con.getInfo(.DbmsVer);
-    // try expectEqualStrings("11.05.0900", info_type.tag().DbmsVer);
+    @memset(odbc_buf[0..], 0);
+    const database_name_info = try con.getInfo(allocator, .DatabaseName, odbc_buf[0..]);
+    defer database_name_info.deinit(allocator);
+    try expectEqualStrings("TESTDB", database_name_info.DatabaseName);
 
-    info_type = try con.getInfo(.DdlIndex);
+    @memset(odbc_buf[0..], 0);
+    const dbms_name_info = try con.getInfo(allocator, .DbmsName, odbc_buf[0..]);
+    defer dbms_name_info.deinit(allocator);
+    try expectEqualStrings("DB2/LINUXX8664", dbms_name_info.DbmsName);
+
+    @memset(odbc_buf[0..], 0);
+    const dbms_ver_info = try con.getInfo(allocator, .DbmsVer, odbc_buf[0..]);
+    defer dbms_ver_info.deinit(allocator);
+    try expectEqualStrings("11.05.0900", dbms_ver_info.DbmsVer);
+
+    @memset(odbc_buf[0..], 0);
+    const ddl_index_info = try con.getInfo(allocator, .DdlIndex, odbc_buf[0..]);
+    defer ddl_index_info.deinit(allocator);
     try expectEqual(
-        Tag.DdlIndexMask{ .data = 3 },
-        info_type.tag().DdlIndex,
+        InfoTypeValue.DdlIndexMask{ .data = 3 },
+        ddl_index_info.DdlIndex,
     );
 
-    info_type = try con.getInfo(.DefaultTxnIsolation);
+    @memset(odbc_buf[0..], 0);
+    const default_txn_isolation_info = try con.getInfo(allocator, .DefaultTxnIsolation, odbc_buf[0..]);
+    defer default_txn_isolation_info.deinit(allocator);
     try expectEqual(
-        Tag.DefaultTxnIsolationMask{ .data = 2 },
-        info_type.tag().DefaultTxnIsolation,
+        InfoTypeValue.DefaultTxnIsolationMask{ .data = 2 },
+        default_txn_isolation_info.DefaultTxnIsolation,
     );
 
-    info_type = try con.getInfo(.DescribeParameter);
-    try expectEqual(true, info_type.tag().DescribeParameter);
+    @memset(odbc_buf[0..], 0);
+    const describe_parameter_info = try con.getInfo(allocator, .DescribeParameter, odbc_buf[0..]);
+    defer describe_parameter_info.deinit(allocator);
+    try expectEqual(true, describe_parameter_info.DescribeParameter);
 
-    info_type = try con.getInfo(.DriverHdbc);
-    try expect(info_type.tag().DriverHdbc > 0);
+    @memset(odbc_buf[0..], 0);
+    const driver_hdbc_info = try con.getInfo(allocator, .DriverHdbc, odbc_buf[0..]);
+    defer driver_hdbc_info.deinit(allocator);
+    try expect(driver_hdbc_info.DriverHdbc > 0);
 
-    info_type = try con.getInfo(.DriverHenv);
-    try expect(info_type.tag().DriverHenv > 0);
+    @memset(odbc_buf[0..], 0);
+    const driver_henv_info = try con.getInfo(allocator, .DriverHenv, odbc_buf[0..]);
+    defer driver_henv_info.deinit(allocator);
+    try expect(driver_henv_info.DriverHenv > 0);
 
-    info_type = try con.getInfo(.DriverHlib);
-    try expect(info_type.tag().DriverHlib > 0);
+    @memset(odbc_buf[0..], 0);
+    const driver_hlib_info = try con.getInfo(allocator, .DriverHlib, odbc_buf[0..]);
+    defer driver_hlib_info.deinit(allocator);
+    try expect(driver_hlib_info.DriverHlib > 0);
 
     // TODO:
     // - seems to require a statement on the connection
-    // info_type = try con.getInfo(.DriverHstmt);
-    // try expect(info_type.tag().DriverHstmt > 0);
+    // @memset(odbc_buf[0..], 0);
+    // const driver_hstmt_info = try con.getInfo(allocator, .DriverHstmt, odbc_buf[0..]);
+    // defer driver_hstmt_info.deinit(allocator);
+    // try expect(driver_hstmt_info.DriverHstmt > 0);
 
-    // TODO:
-    // - seems like the string handling logic isn't correct yet
-    // info_type = try con.getInfo(.DriverName);
-    // try expectEqualStrings("libdb2.a", info_type.tag().DriverName);
+    @memset(odbc_buf[0..], 0);
+    const driver_name_info = try con.getInfo(allocator, .DriverName, odbc_buf[0..]);
+    defer driver_name_info.deinit(allocator);
+    try expectEqualStrings("libdb2.a", driver_name_info.DriverName);
 
-    // info_type = try con.getInfo(.DriverOdbcVer);
-    // try expectEqualStrings("", info_type.tag().DriverOdbcVer);
+    @memset(odbc_buf[0..], 0);
+    const driver_odbc_ver = try con.getInfo(allocator, .DriverOdbcVer, odbc_buf[0..]);
+    defer driver_odbc_ver.deinit(allocator);
+    try expectEqualStrings("03.51", driver_odbc_ver.DriverOdbcVer);
 
-    // info_type = try con.getInfo(.DriverVer);
-    // try expectEqualStrings("11.05.0900", info_type.tag().DriverVer);
+    @memset(odbc_buf[0..], 0);
+    const driver_ver_info = try con.getInfo(allocator, .DriverVer, odbc_buf[0..]);
+    defer driver_ver_info.deinit(allocator);
+    try expectEqualStrings("11.05.0900", driver_ver_info.DriverVer);
 
-    info_type = try con.getInfo(.DropAssertion);
+    @memset(odbc_buf[0..], 0);
+    const drop_assertion_info = try con.getInfo(allocator, .DropAssertion, odbc_buf[0..]);
+    defer drop_assertion_info.deinit(allocator);
     try expectEqual(
-        Tag.DropAssertionMask{ .data = 0 },
-        info_type.tag().DropAssertion,
+        InfoTypeValue.DropAssertionMask{ .data = 0 },
+        drop_assertion_info.DropAssertion,
     );
 
-    info_type = try con.getInfo(.DropCharacterSet);
+    @memset(odbc_buf[0..], 0);
+    const drop_character_set_info = try con.getInfo(allocator, .DropCharacterSet, odbc_buf[0..]);
+    defer drop_character_set_info.deinit(allocator);
     try expectEqual(
-        Tag.DropCharacterSetMask{ .data = 0 },
-        info_type.tag().DropCharacterSet,
+        InfoTypeValue.DropCharacterSetMask{ .data = 0 },
+        drop_character_set_info.DropCharacterSet,
     );
 
-    info_type = try con.getInfo(.DropCollation);
+    @memset(odbc_buf[0..], 0);
+    const drop_collation_info = try con.getInfo(allocator, .DropCollation, odbc_buf[0..]);
+    defer drop_collation_info.deinit(allocator);
     try expectEqual(
-        Tag.DropCollationMask{ .data = 0 },
-        info_type.tag().DropCollation,
+        InfoTypeValue.DropCollationMask{ .data = 0 },
+        drop_collation_info.DropCollation,
     );
 
-    info_type = try con.getInfo(.DropDomain);
+    @memset(odbc_buf[0..], 0);
+    const drop_domain_info = try con.getInfo(allocator, .DropDomain, odbc_buf[0..]);
+    defer drop_domain_info.deinit(allocator);
     try expectEqual(
-        Tag.DropDomainMask{ .data = 0 },
-        info_type.tag().DropDomain,
+        InfoTypeValue.DropDomainMask{ .data = 0 },
+        drop_domain_info.DropDomain,
     );
 
-    info_type = try con.getInfo(.DropSchema);
+    @memset(odbc_buf[0..], 0);
+    const drop_schema_info = try con.getInfo(allocator, .DropSchema, odbc_buf[0..]);
+    defer drop_schema_info.deinit(allocator);
     try expectEqual(
-        Tag.DropSchemaMask{ .data = 3 },
-        info_type.tag().DropSchema,
+        InfoTypeValue.DropSchemaMask{ .data = 3 },
+        drop_schema_info.DropSchema,
     );
 
-    info_type = try con.getInfo(.DropTable);
+    @memset(odbc_buf[0..], 0);
+    const drop_table_info = try con.getInfo(allocator, .DropTable, odbc_buf[0..]);
+    defer drop_table_info.deinit(allocator);
     try expectEqual(
-        Tag.DropTableMask{ .data = 1 },
-        info_type.tag().DropTable,
+        InfoTypeValue.DropTableMask{ .data = 1 },
+        drop_table_info.DropTable,
     );
 
-    info_type = try con.getInfo(.DropTranslation);
+    @memset(odbc_buf[0..], 0);
+    const drop_translation_info = try con.getInfo(allocator, .DropTranslation, odbc_buf[0..]);
+    defer drop_translation_info.deinit(allocator);
     try expectEqual(
-        Tag.DropTranslationMask{ .data = 0 },
-        info_type.tag().DropTranslation,
+        InfoTypeValue.DropTranslationMask{ .data = 0 },
+        drop_translation_info.DropTranslation,
     );
 
-    info_type = try con.getInfo(.DropView);
+    @memset(odbc_buf[0..], 0);
+    const drop_view_info = try con.getInfo(allocator, .DropView, odbc_buf[0..]);
+    defer drop_view_info.deinit(allocator);
     try expectEqual(
-        Tag.DropViewMask{ .data = 1 },
-        info_type.tag().DropView,
+        InfoTypeValue.DropViewMask{ .data = 1 },
+        drop_view_info.DropView,
     );
 
-    info_type = try con.getInfo(.DynamicCursorAttributes1);
+    @memset(odbc_buf[0..], 0);
+    const dynamic_cursor_attributes_1 = try con.getInfo(allocator, .DynamicCursorAttributes1, odbc_buf[0..]);
+    defer dynamic_cursor_attributes_1.deinit(allocator);
     try expectEqual(
-        Tag.DynamicCursorAttributes1Mask{ .data = 0 },
-        info_type.tag().DynamicCursorAttributes1,
+        InfoTypeValue.DynamicCursorAttributes1Mask{ .data = 0 },
+        dynamic_cursor_attributes_1.DynamicCursorAttributes1,
     );
 
-    info_type = try con.getInfo(.DynamicCursorAttributes2);
+    @memset(odbc_buf[0..], 0);
+    const dynamic_cursor_attributes_2 = try con.getInfo(allocator, .DynamicCursorAttributes2, odbc_buf[0..]);
+    defer dynamic_cursor_attributes_2.deinit(allocator);
     try expectEqual(
-        Tag.DynamicCursorAttributes2Mask{ .data = 0 },
-        info_type.tag().DynamicCursorAttributes2,
+        InfoTypeValue.DynamicCursorAttributes2Mask{ .data = 0 },
+        dynamic_cursor_attributes_2.DynamicCursorAttributes2,
     );
 
-    info_type = try con.getInfo(.ExpressionsInOrderby);
-    try expectEqual(true, info_type.tag().ExpressionsInOrderby);
+    @memset(odbc_buf[0..], 0);
+    const expressions_in_orderby_info = try con.getInfo(allocator, .ExpressionsInOrderby, odbc_buf[0..]);
+    defer expressions_in_orderby_info.deinit(allocator);
+    try expectEqual(true, expressions_in_orderby_info.ExpressionsInOrderby);
 
-    info_type = try con.getInfo(.FetchDirection);
+    @memset(odbc_buf[0..], 0);
+    const fetch_direction_info = try con.getInfo(allocator, .FetchDirection, odbc_buf[0..]);
+    defer fetch_direction_info.deinit(allocator);
     try expectEqual(
-        Tag.FetchDirectionMask{ .data = 255 },
-        info_type.tag().FetchDirection,
+        InfoTypeValue.FetchDirectionMask{ .data = 255 },
+        fetch_direction_info.FetchDirection,
     );
 
-    info_type = try con.getInfo(.ForwardOnlyCursorAttributes1);
+    @memset(odbc_buf[0..], 0);
+    const forward_only_cursor_attributes_1 = try con.getInfo(allocator, .ForwardOnlyCursorAttributes1, odbc_buf[0..]);
+    defer forward_only_cursor_attributes_1.deinit(allocator);
     try expectEqual(
-        Tag.ForwardOnlyCursorAttributes1Mask{ .data = 57345 },
-        info_type.tag().ForwardOnlyCursorAttributes1,
+        InfoTypeValue.ForwardOnlyCursorAttributes1Mask{ .data = 57345 },
+        forward_only_cursor_attributes_1.ForwardOnlyCursorAttributes1,
     );
 
-    info_type = try con.getInfo(.ForwardOnlyCursorAttributes2);
+    @memset(odbc_buf[0..], 0);
+    const forward_only_cursor_attributes_2 = try con.getInfo(allocator, .ForwardOnlyCursorAttributes2, odbc_buf[0..]);
+    defer forward_only_cursor_attributes_2.deinit(allocator);
     try expectEqual(
-        Tag.ForwardOnlyCursorAttributes2Mask{ .data = 2179 },
-        info_type.tag().ForwardOnlyCursorAttributes2,
+        InfoTypeValue.ForwardOnlyCursorAttributes2Mask{ .data = 2179 },
+        forward_only_cursor_attributes_2.ForwardOnlyCursorAttributes2,
     );
 
-    info_type = try con.getInfo(.GetdataExtensions);
+    @memset(odbc_buf[0..], 0);
+    const getdata_extensions_info = try con.getInfo(allocator, .GetdataExtensions, odbc_buf[0..]);
+    defer getdata_extensions_info.deinit(allocator);
     try expectEqual(
-        Tag.GetdataExtensionsMask{ .data = 7 },
-        info_type.tag().GetdataExtensions,
+        InfoTypeValue.GetdataExtensionsMask{ .data = 7 },
+        getdata_extensions_info.GetdataExtensions,
     );
 
-    info_type = try con.getInfo(.GroupBy);
+    @memset(odbc_buf[0..], 0);
+    const group_by_info = try con.getInfo(allocator, .GroupBy, odbc_buf[0..]);
+    defer group_by_info.deinit(allocator);
     try expectEqual(
-        Tag.GroupBy.GroupByContainsSelect,
-        info_type.tag().GroupBy,
+        InfoTypeValue.GroupBy.GroupByContainsSelect,
+        group_by_info.GroupBy,
     );
 
-    info_type = try con.getInfo(.IdentifierCase);
+    @memset(odbc_buf[0..], 0);
+    const identifier_case_info = try con.getInfo(allocator, .IdentifierCase, odbc_buf[0..]);
+    defer identifier_case_info.deinit(allocator);
     try expectEqual(
-        Tag.IdentifierCase.Upper,
-        info_type.tag().IdentifierCase,
+        InfoTypeValue.IdentifierCase.Upper,
+        identifier_case_info.IdentifierCase,
     );
 
-    // info_type = try con.getInfo(.IdentifierQuoteChar);
-    // try expectEqualStrings("\"", info_type.tag().IdentifierQuoteChar);
-
-    info_type = try con.getInfo(.InfoSchemaViews);
-    try expectEqual(
-        Tag.InfoSchemaViewsMask{ .data = 0 },
-        info_type.tag().InfoSchemaViews,
+    @memset(odbc_buf[0..], 0);
+    const identifier_quote_char_info = try con.getInfo(allocator, .IdentifierQuoteChar, odbc_buf[0..]);
+    defer identifier_quote_char_info.deinit(allocator);
+    try expectEqualStrings(
+        "\"",
+        identifier_quote_char_info.IdentifierQuoteChar,
     );
 
-    info_type = try con.getInfo(.InsertStatement);
+    @memset(odbc_buf[0..], 0);
+    const info_schema_views_info = try con.getInfo(allocator, .InfoSchemaViews, odbc_buf[0..]);
+    defer info_schema_views_info.deinit(allocator);
     try expectEqual(
-        Tag.InsertStatementMask{ .data = 7 },
-        info_type.tag().InsertStatement,
+        InfoTypeValue.InfoSchemaViewsMask{ .data = 0 },
+        info_schema_views_info.InfoSchemaViews,
     );
 
-    info_type = try con.getInfo(.Integrity);
-    try expectEqual(true, info_type.tag().Integrity);
-
-    info_type = try con.getInfo(.KeysetCursorAttributes1);
+    @memset(odbc_buf[0..], 0);
+    const insert_statement_info = try con.getInfo(allocator, .InsertStatement, odbc_buf[0..]);
+    defer insert_statement_info.deinit(allocator);
     try expectEqual(
-        Tag.KeysetCursorAttributes1Mask{ .data = 990799 },
-        info_type.tag().KeysetCursorAttributes1,
+        InfoTypeValue.InsertStatementMask{ .data = 7 },
+        insert_statement_info.InsertStatement,
     );
 
-    info_type = try con.getInfo(.KeysetCursorAttributes2);
+    @memset(odbc_buf[0..], 0);
+    const integrity_info = try con.getInfo(allocator, .Integrity, odbc_buf[0..]);
+    defer integrity_info.deinit(allocator);
+    try expectEqual(true, integrity_info.Integrity);
+
+    @memset(odbc_buf[0..], 0);
+    const keyset_cursor_attributes1_info = try con.getInfo(allocator, .KeysetCursorAttributes1, odbc_buf[0..]);
+    defer keyset_cursor_attributes1_info.deinit(allocator);
     try expectEqual(
-        Tag.KeysetCursorAttributes2Mask{ .data = 16395 },
-        info_type.tag().KeysetCursorAttributes2,
+        InfoTypeValue.KeysetCursorAttributes1Mask{ .data = 990799 },
+        keyset_cursor_attributes1_info.KeysetCursorAttributes1,
     );
 
-    info_type = try con.getInfo(.Keywords);
+    @memset(odbc_buf[0..], 0);
+    const keyset_cursor_attributes2_info = try con.getInfo(allocator, .KeysetCursorAttributes2, odbc_buf[0..]);
+    defer keyset_cursor_attributes2_info.deinit(allocator);
+    try expectEqual(
+        InfoTypeValue.KeysetCursorAttributes2Mask{ .data = 16395 },
+        keyset_cursor_attributes2_info.KeysetCursorAttributes2,
+    );
+
+    @memset(odbc_buf[0..], 0);
+    const keywords_info = try con.getInfo(allocator, .Keywords, odbc_buf[0..]);
+    defer keywords_info.deinit(allocator);
     try expectEqualStrings(
         "AFTER,ALIAS,ALLOW,APPLICATION,ASSOCIATE,ASUTIME,AUDIT,AUX,AUXILIARY,BEFORE,BINARY,BUFFERPOOL,CACHE,CALL,CALLED,CAPTURE,CARDINALITY,CCSID,CLUSTER,COLLECTION,COLLID,COMMENT,CONCAT,CONDITION,CONTAINS,COUNT_BIG,CURRENT_LC_CTYPE,CURRENT_PATH,CURRENT_SERVER,CURRENT_TIMEZONE,CYCLE,DATA,DATABASE,DAYS,DB2GENERAL,DB2GENRL,DB2SQL,DBINFO,DEFAULTS,DEFINITION,DETERMINISTIC,DISALLOW,DO,DSNHATTR,DSSIZE,DYNAMIC,EACH,EDITPROC,ELSEIF,ENCODING,END-EXEC1,ERASE,EXCLUDING,EXIT,FENCED,FIELDPROC,FILE,FINAL,FREE,FUNCTION,GENERAL,GENERATED,GRAPHIC,HANDLER,HOLD,HOURS,IF,INCLUDING,INCREMENT,INHERIT,INOUT,INTEGRITY,ISOBID,ITERATE,JAR,JAVA,LABEL,LC_CTYPE,LEAVE,LINKTYPE,LOCALE,LOCATOR,LOCATORS,LOCK,LOCKMAX,LOCKSIZE,LONG,LOOP,MAXVALUE,MICROSECOND,MICROSECONDS,MINUTES,MINVALUE,MODE,MODIFIES,MONTHS,NEW,NEW_TABLE,NOCACHE,NOCYCLE,NODENAME,NODENUMBER,NOMAXVALUE,NOMINVALUE,NOORDER,NULLS,NUMPARTS,OBID,OLD,OLD_TABLE,OPTIMIZATION,OPTIMIZE,OUT,OVERRIDING,PACKAGE,PARAMETER,PART,PARTITION,PATH,PIECESIZE,PLAN,PRIQTY,PROGRAM,PSID,QUERYNO,READS,RECOVERY,REFERENCING,RELEASE,RENAME,REPEAT,RESET,RESIGNAL,RESTART,RESULT,RESULT_SET_LOCATOR,RETURN,RETURNS,ROUTINE,ROW,RRN,RUN,SAVEPOINT,SCRATCHPAD,SECONDS,SECQTY,SECURITY,SENSITIVE,SIGNAL,SIMPLE,SOURCE,SPECIFIC,SQLID,STANDARD,START,STATIC,STAY,STOGROUP,STORES,STYLE,SUBPAGES,SYNONYM,SYSFUN,SYSIBM,SYSPROC,SYSTEM,TABLESPACE,TRIGGER,TYPE,UNDO,UNTIL,VALIDPROC,VARIABLE,VARIANT,VCAT,VOLUMES,WHILE,WLM,YEARS",
-        info_type.tag().Keywords,
+        keywords_info.Keywords,
     );
 
-    // info_type = try con.getInfo(.LikeEscapeClause);
-    // try expectEqualStrings("", info_type.tag().LikeEscapeClause);
+    @memset(odbc_buf[0..], 0);
+    const like_escape_clause_info = try con.getInfo(allocator, .LikeEscapeClause, odbc_buf[0..]);
+    defer like_escape_clause_info.deinit(allocator);
+    try expectEqual(true, like_escape_clause_info.LikeEscapeClause);
 
-    info_type = try con.getInfo(.LockTypes);
+    @memset(odbc_buf[0..], 0);
+    const lock_types_info = try con.getInfo(allocator, .LockTypes, odbc_buf[0..]);
+    defer lock_types_info.deinit(allocator);
     try expectEqual(
-        Tag.LockTypesMask{ .data = 0 },
-        info_type.tag().LockTypes,
+        InfoTypeValue.LockTypesMask{ .data = 0 },
+        lock_types_info.LockTypes,
     );
 
-    info_type = try con.getInfo(.MaxAsyncConcurrentStatements);
-    try expectEqual(1, info_type.tag().MaxAsyncConcurrentStatements);
+    @memset(odbc_buf[0..], 0);
+    const max_async_concurrent_statements_info = try con.getInfo(allocator, .MaxAsyncConcurrentStatements, odbc_buf[0..]);
+    defer max_async_concurrent_statements_info.deinit(allocator);
+    try expectEqual(1, max_async_concurrent_statements_info.MaxAsyncConcurrentStatements);
 
-    info_type = try con.getInfo(.MaxBinaryLiteralLen);
-    try expectEqual(4000, info_type.tag().MaxBinaryLiteralLen);
+    @memset(odbc_buf[0..], 0);
+    const max_binary_literal_len_info = try con.getInfo(allocator, .MaxBinaryLiteralLen, odbc_buf[0..]);
+    defer max_binary_literal_len_info.deinit(allocator);
+    try expectEqual(4000, max_binary_literal_len_info.MaxBinaryLiteralLen);
 
-    info_type = try con.getInfo(.MaxCatalogNameLen);
-    try expectEqual(0, info_type.tag().MaxCatalogNameLen);
+    @memset(odbc_buf[0..], 0);
+    const max_catalog_name_len_info = try con.getInfo(allocator, .MaxCatalogNameLen, odbc_buf[0..]);
+    defer max_catalog_name_len_info.deinit(allocator);
+    try expectEqual(0, max_catalog_name_len_info.MaxCatalogNameLen);
 
-    info_type = try con.getInfo(.MaxCharLiteralLen);
-    try expectEqual(32672, info_type.tag().MaxCharLiteralLen);
+    @memset(odbc_buf[0..], 0);
+    const max_char_literal_len_info = try con.getInfo(allocator, .MaxCharLiteralLen, odbc_buf[0..]);
+    defer max_char_literal_len_info.deinit(allocator);
+    try expectEqual(32672, max_char_literal_len_info.MaxCharLiteralLen);
 
-    info_type = try con.getInfo(.MaxColumnNameLen);
-    try expectEqual(128, info_type.tag().MaxColumnNameLen);
+    @memset(odbc_buf[0..], 0);
+    const max_column_name_len_info = try con.getInfo(allocator, .MaxColumnNameLen, odbc_buf[0..]);
+    defer max_column_name_len_info.deinit(allocator);
+    try expectEqual(128, max_column_name_len_info.MaxColumnNameLen);
 
-    info_type = try con.getInfo(.MaxColumnsInGroupBy);
-    try expectEqual(1012, info_type.tag().MaxColumnsInGroupBy);
+    @memset(odbc_buf[0..], 0);
+    const max_columns_in_group_by_info = try con.getInfo(allocator, .MaxColumnsInGroupBy, odbc_buf[0..]);
+    defer max_columns_in_group_by_info.deinit(allocator);
+    try expectEqual(1012, max_columns_in_group_by_info.MaxColumnsInGroupBy);
 
-    info_type = try con.getInfo(.MaxColumnsInIndex);
-    try expectEqual(16, info_type.tag().MaxColumnsInIndex);
+    @memset(odbc_buf[0..], 0);
+    const max_columns_in_index_info = try con.getInfo(allocator, .MaxColumnsInIndex, odbc_buf[0..]);
+    defer max_columns_in_index_info.deinit(allocator);
+    try expectEqual(16, max_columns_in_index_info.MaxColumnsInIndex);
 
-    info_type = try con.getInfo(.MaxColumnsInOrderBy);
-    try expectEqual(1012, info_type.tag().MaxColumnsInOrderBy);
+    @memset(odbc_buf[0..], 0);
+    const max_columns_in_order_by_info = try con.getInfo(allocator, .MaxColumnsInOrderBy, odbc_buf[0..]);
+    defer max_columns_in_order_by_info.deinit(allocator);
+    try expectEqual(1012, max_columns_in_order_by_info.MaxColumnsInOrderBy);
 
-    info_type = try con.getInfo(.MaxColumnsInSelect);
-    try expectEqual(1012, info_type.tag().MaxColumnsInSelect);
+    @memset(odbc_buf[0..], 0);
+    const max_columns_in_select_info = try con.getInfo(allocator, .MaxColumnsInSelect, odbc_buf[0..]);
+    defer max_columns_in_select_info.deinit(allocator);
+    try expectEqual(1012, max_columns_in_select_info.MaxColumnsInSelect);
 
-    info_type = try con.getInfo(.MaxColumnsInTable);
-    try expectEqual(1012, info_type.tag().MaxColumnsInTable);
+    @memset(odbc_buf[0..], 0);
+    const max_columns_in_table_info = try con.getInfo(allocator, .MaxColumnsInTable, odbc_buf[0..]);
+    defer max_columns_in_table_info.deinit(allocator);
+    try expectEqual(1012, max_columns_in_table_info.MaxColumnsInTable);
 
-    info_type = try con.getInfo(.MaxConcurrentActivities);
-    try expectEqual(0, info_type.tag().MaxConcurrentActivities);
+    @memset(odbc_buf[0..], 0);
+    const max_concurrent_activities_info = try con.getInfo(allocator, .MaxConcurrentActivities, odbc_buf[0..]);
+    defer max_concurrent_activities_info.deinit(allocator);
+    try expectEqual(0, max_concurrent_activities_info.MaxConcurrentActivities);
 
-    info_type = try con.getInfo(.MaxCursorNameLen);
-    try expectEqual(128, info_type.tag().MaxCursorNameLen);
+    @memset(odbc_buf[0..], 0);
+    const max_cursor_name_len_info = try con.getInfo(allocator, .MaxCursorNameLen, odbc_buf[0..]);
+    defer max_cursor_name_len_info.deinit(allocator);
+    try expectEqual(128, max_cursor_name_len_info.MaxCursorNameLen);
 
-    info_type = try con.getInfo(.MaxDriverConnections);
-    try expectEqual(0, info_type.tag().MaxDriverConnections);
+    @memset(odbc_buf[0..], 0);
+    const max_driver_connections_info = try con.getInfo(allocator, .MaxDriverConnections, odbc_buf[0..]);
+    defer max_driver_connections_info.deinit(allocator);
+    try expectEqual(0, max_driver_connections_info.MaxDriverConnections);
 
-    info_type = try con.getInfo(.MaxIdentifierLen);
-    try expectEqual(128, info_type.tag().MaxIdentifierLen);
+    @memset(odbc_buf[0..], 0);
+    const max_identifier_len_info = try con.getInfo(allocator, .MaxIdentifierLen, odbc_buf[0..]);
+    defer max_identifier_len_info.deinit(allocator);
+    try expectEqual(128, max_identifier_len_info.MaxIdentifierLen);
 
-    info_type = try con.getInfo(.MaxIndexSize);
-    try expectEqual(1024, info_type.tag().MaxIndexSize);
+    @memset(odbc_buf[0..], 0);
+    const max_index_size_info = try con.getInfo(allocator, .MaxIndexSize, odbc_buf[0..]);
+    defer max_index_size_info.deinit(allocator);
+    try expectEqual(1024, max_index_size_info.MaxIndexSize);
 
-    info_type = try con.getInfo(.MaxProcedureNameLen);
-    try expectEqual(128, info_type.tag().MaxProcedureNameLen);
+    @memset(odbc_buf[0..], 0);
+    const max_procedure_name_len_info = try con.getInfo(allocator, .MaxProcedureNameLen, odbc_buf[0..]);
+    defer max_procedure_name_len_info.deinit(allocator);
+    try expectEqual(128, max_procedure_name_len_info.MaxProcedureNameLen);
 
-    info_type = try con.getInfo(.MaxRowSize);
-    try expectEqual(32677, info_type.tag().MaxRowSize);
+    @memset(odbc_buf[0..], 0);
+    const max_row_size_info = try con.getInfo(allocator, .MaxRowSize, odbc_buf[0..]);
+    defer max_row_size_info.deinit(allocator);
+    try expectEqual(32677, max_row_size_info.MaxRowSize);
 
-    info_type = try con.getInfo(.MaxRowSizeIncludesLong);
-    try expectEqual(false, info_type.tag().MaxRowSizeIncludesLong);
+    @memset(odbc_buf[0..], 0);
+    const max_row_size_includes_long_info = try con.getInfo(allocator, .MaxRowSizeIncludesLong, odbc_buf[0..]);
+    defer max_row_size_includes_long_info.deinit(allocator);
+    try expectEqual(false, max_row_size_includes_long_info.MaxRowSizeIncludesLong);
 
-    info_type = try con.getInfo(.MaxSchemaNameLen);
-    try expectEqual(128, info_type.tag().MaxSchemaNameLen);
+    @memset(odbc_buf[0..], 0);
+    const max_schema_name_len_info = try con.getInfo(allocator, .MaxSchemaNameLen, odbc_buf[0..]);
+    defer max_schema_name_len_info.deinit(allocator);
+    try expectEqual(128, max_schema_name_len_info.MaxSchemaNameLen);
 
-    info_type = try con.getInfo(.MaxStatementLen);
-    try expectEqual(2097152, info_type.tag().MaxStatementLen);
+    @memset(odbc_buf[0..], 0);
+    const max_statement_len_info = try con.getInfo(allocator, .MaxStatementLen, odbc_buf[0..]);
+    defer max_statement_len_info.deinit(allocator);
+    try expectEqual(2097152, max_statement_len_info.MaxStatementLen);
 
-    info_type = try con.getInfo(.MaxTableNameLen);
-    try expectEqual(128, info_type.tag().MaxTableNameLen);
+    @memset(odbc_buf[0..], 0);
+    const max_table_name_len_info = try con.getInfo(allocator, .MaxTableNameLen, odbc_buf[0..]);
+    defer max_table_name_len_info.deinit(allocator);
+    try expectEqual(128, max_table_name_len_info.MaxTableNameLen);
 
-    info_type = try con.getInfo(.MaxTablesInSelect);
-    try expectEqual(0, info_type.tag().MaxTablesInSelect);
+    @memset(odbc_buf[0..], 0);
+    const max_tables_in_select_info = try con.getInfo(allocator, .MaxTablesInSelect, odbc_buf[0..]);
+    defer max_tables_in_select_info.deinit(allocator);
+    try expectEqual(0, max_tables_in_select_info.MaxTablesInSelect);
 
-    info_type = try con.getInfo(.MaxUserNameLen);
-    try expectEqual(8, info_type.tag().MaxUserNameLen);
+    @memset(odbc_buf[0..], 0);
+    const max_user_name_len_info = try con.getInfo(allocator, .MaxUserNameLen, odbc_buf[0..]);
+    defer max_user_name_len_info.deinit(allocator);
+    try expectEqual(8, max_user_name_len_info.MaxUserNameLen);
 
-    info_type = try con.getInfo(.MultResultSets);
-    try expectEqual(true, info_type.tag().MultResultSets);
+    @memset(odbc_buf[0..], 0);
+    const mult_result_sets_info = try con.getInfo(allocator, .MultResultSets, odbc_buf[0..]);
+    defer mult_result_sets_info.deinit(allocator);
+    try expectEqual(true, mult_result_sets_info.MultResultSets);
 
-    info_type = try con.getInfo(.MultipleActiveTxn);
-    try expectEqual(true, info_type.tag().MultipleActiveTxn);
+    @memset(odbc_buf[0..], 0);
+    const multiple_active_txn_info = try con.getInfo(allocator, .MultipleActiveTxn, odbc_buf[0..]);
+    defer multiple_active_txn_info.deinit(allocator);
+    try expectEqual(true, multiple_active_txn_info.MultipleActiveTxn);
 
-    info_type = try con.getInfo(.NeedLongDataLen);
-    try expectEqual(false, info_type.tag().NeedLongDataLen);
+    @memset(odbc_buf[0..], 0);
+    const need_long_data_len_info = try con.getInfo(allocator, .NeedLongDataLen, odbc_buf[0..]);
+    defer need_long_data_len_info.deinit(allocator);
+    try expectEqual(false, need_long_data_len_info.NeedLongDataLen);
 
-    info_type = try con.getInfo(.NonNullableColumns);
+    @memset(odbc_buf[0..], 0);
+    const non_nullable_columns_info = try con.getInfo(allocator, .NonNullableColumns, odbc_buf[0..]);
+    defer non_nullable_columns_info.deinit(allocator);
     try expectEqual(
-        Tag.NonNullableColumns.NonNull,
-        info_type.tag().NonNullableColumns,
+        InfoTypeValue.NonNullableColumns.NonNull,
+        non_nullable_columns_info.NonNullableColumns,
     );
 
-    info_type = try con.getInfo(.NullCollation);
+    @memset(odbc_buf[0..], 0);
+    const null_collation_info = try con.getInfo(allocator, .NullCollation, odbc_buf[0..]);
+    defer null_collation_info.deinit(allocator);
     try expectEqual(
-        Tag.NullCollation.High,
-        info_type.tag().NullCollation,
+        InfoTypeValue.NullCollation.High,
+        null_collation_info.NullCollation,
     );
 
-    info_type = try con.getInfo(.NumericFunctions);
+    @memset(odbc_buf[0..], 0);
+    const numeric_functions_info = try con.getInfo(allocator, .NumericFunctions, odbc_buf[0..]);
+    defer numeric_functions_info.deinit(allocator);
     try expectEqual(
-        Tag.NumericFunctionsMask{ .data = 16777215 },
-        info_type.tag().NumericFunctions,
+        InfoTypeValue.NumericFunctionsMask{ .data = 16777215 },
+        numeric_functions_info.NumericFunctions,
     );
 
-    info_type = try con.getInfo(.OdbcApiConformance);
+    @memset(odbc_buf[0..], 0);
+    const odbc_api_conformance_info = try con.getInfo(allocator, .OdbcApiConformance, odbc_buf[0..]);
+    defer odbc_api_conformance_info.deinit(allocator);
     try expectEqual(
-        Tag.OdbcApiConformance.Level2,
-        info_type.tag().OdbcApiConformance,
+        InfoTypeValue.OdbcApiConformance.Level2,
+        odbc_api_conformance_info.OdbcApiConformance,
     );
 
-    info_type = try con.getInfo(.OdbcSagCliConformance);
+    @memset(odbc_buf[0..], 0);
+    const odbc_sag_cli_conformance_info = try con.getInfo(allocator, .OdbcSagCliConformance, odbc_buf[0..]);
+    defer odbc_sag_cli_conformance_info.deinit(allocator);
     try expectEqual(
-        Tag.OdbcSagCliConformance.Compliant,
-        info_type.tag().OdbcSagCliConformance,
+        InfoTypeValue.OdbcSagCliConformance.Compliant,
+        odbc_sag_cli_conformance_info.OdbcSagCliConformance,
     );
 
-    info_type = try con.getInfo(.OdbcSqlConformance);
+    @memset(odbc_buf[0..], 0);
+    const odbc_sql_conformance_info = try con.getInfo(allocator, .OdbcSqlConformance, odbc_buf[0..]);
+    defer odbc_sql_conformance_info.deinit(allocator);
     try expectEqual(
-        Tag.OdbcSqlConformance.Extended,
-        info_type.tag().OdbcSqlConformance,
+        InfoTypeValue.OdbcSqlConformance.Extended,
+        odbc_sql_conformance_info.OdbcSqlConformance,
     );
 
-    // info_type = try con.getInfo(.OdbcVer);
-    // try expectEqualStrings("v", info_type.tag().OdbcVer);
+    @memset(odbc_buf[0..], 0);
+    const odbc_ver_info = try con.getInfo(allocator, .OdbcVer, odbc_buf[0..]);
+    defer odbc_ver_info.deinit(allocator);
+    try expectEqualStrings("03.52", odbc_ver_info.OdbcVer);
 
-    info_type = try con.getInfo(.OjCapabilities);
+    @memset(odbc_buf[0..], 0);
+    const oj_capabilities_info = try con.getInfo(allocator, .OjCapabilities, odbc_buf[0..]);
+    defer oj_capabilities_info.deinit(allocator);
     try expectEqual(
-        Tag.OjCapabilitiesMask{ .data = 127 },
-        info_type.tag().OjCapabilities,
+        InfoTypeValue.OjCapabilitiesMask{ .data = 127 },
+        oj_capabilities_info.OjCapabilities,
     );
 
-    info_type = try con.getInfo(.OrderByColumnsInSelect);
-    try expectEqual(false, info_type.tag().OrderByColumnsInSelect);
+    @memset(odbc_buf[0..], 0);
+    const order_by_columns_in_select_info = try con.getInfo(allocator, .OrderByColumnsInSelect, odbc_buf[0..]);
+    defer order_by_columns_in_select_info.deinit(allocator);
+    try expectEqual(false, order_by_columns_in_select_info.OrderByColumnsInSelect);
 
-    info_type = try con.getInfo(.OuterJoins);
-    try expectEqual(true, info_type.tag().OuterJoins);
+    @memset(odbc_buf[0..], 0);
+    const outer_joins_info = try con.getInfo(allocator, .OuterJoins, odbc_buf[0..]);
+    defer outer_joins_info.deinit(allocator);
+    try expectEqual(true, outer_joins_info.OuterJoins);
 
-    // info_type = try con.getInfo(.OwnerTerm);
-    // try expectEqualStrings("todo", info_type.tag().OwnerTerm);
+    @memset(odbc_buf[0..], 0);
+    const owner_term_info = try con.getInfo(allocator, .OwnerTerm, odbc_buf[0..]);
+    defer owner_term_info.deinit(allocator);
+    try expectEqualStrings("schema", owner_term_info.OwnerTerm);
 
-    info_type = try con.getInfo(.ParamArrayRowCounts);
+    @memset(odbc_buf[0..], 0);
+    const param_array_row_counts_info = try con.getInfo(allocator, .ParamArrayRowCounts, odbc_buf[0..]);
+    defer param_array_row_counts_info.deinit(allocator);
     try expectEqual(
-        Tag.ParamArrayRowCounts.NoBatch,
-        info_type.tag().ParamArrayRowCounts,
+        InfoTypeValue.ParamArrayRowCounts.NoBatch,
+        param_array_row_counts_info.ParamArrayRowCounts,
     );
 
-    info_type = try con.getInfo(.ParamArraySelects);
+    @memset(odbc_buf[0..], 0);
+    const param_array_selects_info = try con.getInfo(allocator, .ParamArraySelects, odbc_buf[0..]);
+    defer param_array_selects_info.deinit(allocator);
     try expectEqual(
-        Tag.ParamArraySelects.Batch,
-        info_type.tag().ParamArraySelects,
+        InfoTypeValue.ParamArraySelects.Batch,
+        param_array_selects_info.ParamArraySelects,
     );
 
-    info_type = try con.getInfo(.PosOperations);
+    @memset(odbc_buf[0..], 0);
+    const pos_operations_info = try con.getInfo(allocator, .PosOperations, odbc_buf[0..]);
+    defer pos_operations_info.deinit(allocator);
     try expectEqual(
-        Tag.PosOperationsMask{ .data = 31 },
-        info_type.tag().PosOperations,
+        InfoTypeValue.PosOperationsMask{ .data = 31 },
+        pos_operations_info.PosOperations,
     );
 
-    info_type = try con.getInfo(.PositionedStatements);
+    @memset(odbc_buf[0..], 0);
+    const positioned_statements_info = try con.getInfo(allocator, .PositionedStatements, odbc_buf[0..]);
+    defer positioned_statements_info.deinit(allocator);
     try expectEqual(
-        Tag.PositionedStatementsMask{ .data = 7 },
-        info_type.tag().PositionedStatements,
+        InfoTypeValue.PositionedStatementsMask{ .data = 7 },
+        positioned_statements_info.PositionedStatements,
     );
 
-    // info_type = try con.getInfo(.ProcedureTerm);
-    // try expectEqualStrings("", info_type.tag().ProcedureTerm);
+    @memset(odbc_buf[0..], 0);
+    const procedure_term_info = try con.getInfo(allocator, .ProcedureTerm, odbc_buf[0..]);
+    defer procedure_term_info.deinit(allocator);
+    try expectEqualStrings("stored procedure", procedure_term_info.ProcedureTerm);
 
-    info_type = try con.getInfo(.Procedures);
-    try expectEqual(true, info_type.tag().Procedures);
+    @memset(odbc_buf[0..], 0);
+    const procedures_info = try con.getInfo(allocator, .Procedures, odbc_buf[0..]);
+    defer procedures_info.deinit(allocator);
+    try expectEqual(true, procedures_info.Procedures);
 
-    info_type = try con.getInfo(.QuotedIdentifierCase);
+    @memset(odbc_buf[0..], 0);
+    const quoted_identifier_case_info = try con.getInfo(allocator, .QuotedIdentifierCase, odbc_buf[0..]);
+    defer quoted_identifier_case_info.deinit(allocator);
     try expectEqual(
-        Tag.QuotedIdentifierCase.Sensitive,
-        info_type.tag().QuotedIdentifierCase,
+        InfoTypeValue.QuotedIdentifierCase.Sensitive,
+        quoted_identifier_case_info.QuotedIdentifierCase,
     );
 
-    info_type = try con.getInfo(.RowUpdates);
-    try expectEqual(false, info_type.tag().RowUpdates);
+    @memset(odbc_buf[0..], 0);
+    const row_updates_info = try con.getInfo(allocator, .RowUpdates, odbc_buf[0..]);
+    defer row_updates_info.deinit(allocator);
+    try expectEqual(false, row_updates_info.RowUpdates);
 
-    info_type = try con.getInfo(.SchemaUsage);
+    @memset(odbc_buf[0..], 0);
+    const schema_usage_info = try con.getInfo(allocator, .SchemaUsage, odbc_buf[0..]);
+    defer schema_usage_info.deinit(allocator);
     try expectEqual(
-        Tag.SchemaUsageMask{ .data = 31 },
-        info_type.tag().SchemaUsage,
+        InfoTypeValue.SchemaUsageMask{ .data = 31 },
+        schema_usage_info.SchemaUsage,
     );
 
-    info_type = try con.getInfo(.ScrollConcurrency);
+    @memset(odbc_buf[0..], 0);
+    const scroll_concurrency_info = try con.getInfo(allocator, .ScrollConcurrency, odbc_buf[0..]);
+    defer scroll_concurrency_info.deinit(allocator);
     try expectEqual(
-        Tag.ScrollConcurrencyMask{ .data = 11 },
-        info_type.tag().ScrollConcurrency,
+        InfoTypeValue.ScrollConcurrencyMask{ .data = 11 },
+        scroll_concurrency_info.ScrollConcurrency,
     );
 
-    info_type = try con.getInfo(.ScrollOptions);
+    @memset(odbc_buf[0..], 0);
+    const scroll_options_info = try con.getInfo(allocator, .ScrollOptions, odbc_buf[0..]);
+    defer scroll_options_info.deinit(allocator);
     try expectEqual(
-        Tag.ScrollOptionsMask{ .data = 19 },
-        info_type.tag().ScrollOptions,
+        InfoTypeValue.ScrollOptionsMask{ .data = 19 },
+        scroll_options_info.ScrollOptions,
     );
 
-    info_type = try con.getInfo(.SearchPatternEscape);
-    try expectEqualStrings("\\", info_type.tag().SearchPatternEscape);
+    @memset(odbc_buf[0..], 0);
+    const search_pattern_escape_info = try con.getInfo(allocator, .SearchPatternEscape, odbc_buf[0..]);
+    defer search_pattern_escape_info.deinit(allocator);
+    try expectEqualStrings("\\", search_pattern_escape_info.SearchPatternEscape);
 
-    info_type = try con.getInfo(.ServerName);
-    try expectEqualStrings("DB2", info_type.tag().ServerName);
+    @memset(odbc_buf[0..], 0);
+    const server_name_info = try con.getInfo(allocator, .ServerName, odbc_buf[0..]);
+    defer server_name_info.deinit(allocator);
+    try expectEqualStrings("DB2", server_name_info.ServerName);
 
-    // info_type = try con.getInfo(.SpecialCharacters);
-    // try expectEqualStrings("", info_type.tag().SpecialCharacters);
+    @memset(odbc_buf[0..], 0);
+    const special_characters_info = try con.getInfo(allocator, .SpecialCharacters, odbc_buf[0..]);
+    defer special_characters_info.deinit(allocator);
+    try expectEqualStrings("@#", special_characters_info.SpecialCharacters);
 
-    info_type = try con.getInfo(.Sql92Predicates);
+    @memset(odbc_buf[0..], 0);
+    const sql92_predicates_info = try con.getInfo(allocator, .Sql92Predicates, odbc_buf[0..]);
+    defer sql92_predicates_info.deinit(allocator);
     try expectEqual(
-        Tag.Sql92PredicatesMask{ .data = 15879 },
-        info_type.tag().Sql92Predicates,
+        InfoTypeValue.Sql92PredicatesMask{ .data = 15879 },
+        sql92_predicates_info.Sql92Predicates,
     );
 
-    info_type = try con.getInfo(.Sql92ValueExpressions);
+    @memset(odbc_buf[0..], 0);
+    const sql92_value_expressions_info = try con.getInfo(allocator, .Sql92ValueExpressions, odbc_buf[0..]);
+    defer sql92_value_expressions_info.deinit(allocator);
     try expectEqual(
-        Tag.Sql92ValueExpressionsMask{ .data = 15 },
-        info_type.tag().Sql92ValueExpressions,
+        InfoTypeValue.Sql92ValueExpressionsMask{ .data = 15 },
+        sql92_value_expressions_info.Sql92ValueExpressions,
     );
 
-    info_type = try con.getInfo(.StaticCursorAttributes1);
+    @memset(odbc_buf[0..], 0);
+    const static_cursor_attributes_1_info = try con.getInfo(allocator, .StaticCursorAttributes1, odbc_buf[0..]);
+    defer static_cursor_attributes_1_info.deinit(allocator);
     try expectEqual(
-        Tag.StaticCursorAttributes1Mask{ .data = 15 },
-        info_type.tag().StaticCursorAttributes1,
+        InfoTypeValue.StaticCursorAttributes1Mask{ .data = 15 },
+        static_cursor_attributes_1_info.StaticCursorAttributes1,
     );
 
-    info_type = try con.getInfo(.StaticCursorAttributes2);
+    @memset(odbc_buf[0..], 0);
+    const static_cursor_attributes_2_info = try con.getInfo(allocator, .StaticCursorAttributes2, odbc_buf[0..]);
+    defer static_cursor_attributes_2_info.deinit(allocator);
     try expectEqual(
-        Tag.StaticCursorAttributes2Mask{ .data = 131 },
-        info_type.tag().StaticCursorAttributes2,
+        InfoTypeValue.StaticCursorAttributes2Mask{ .data = 131 },
+        static_cursor_attributes_2_info.StaticCursorAttributes2,
     );
 
-    info_type = try con.getInfo(.StaticSensitivity);
+    @memset(odbc_buf[0..], 0);
+    const static_sensitivity_info = try con.getInfo(allocator, .StaticSensitivity, odbc_buf[0..]);
+    defer static_sensitivity_info.deinit(allocator);
     try expectEqual(
-        Tag.StaticSensitivityMask{ .data = 0 },
-        info_type.tag().StaticSensitivity,
+        InfoTypeValue.StaticSensitivityMask{ .data = 0 },
+        static_sensitivity_info.StaticSensitivity,
     );
 
-    info_type = try con.getInfo(.StringFunctions);
+    @memset(odbc_buf[0..], 0);
+    const string_functions_info = try con.getInfo(allocator, .StringFunctions, odbc_buf[0..]);
+    defer string_functions_info.deinit(allocator);
     try expectEqual(
-        Tag.StringFunctionsMask{ .data = 524287 },
-        info_type.tag().StringFunctions,
+        InfoTypeValue.StringFunctionsMask{ .data = 524287 },
+        string_functions_info.StringFunctions,
     );
 
-    info_type = try con.getInfo(.Subqueries);
+    @memset(odbc_buf[0..], 0);
+    const subqueries_info = try con.getInfo(allocator, .Subqueries, odbc_buf[0..]);
+    defer subqueries_info.deinit(allocator);
     try expectEqual(
-        Tag.SubqueriesMask{ .data = 31 },
-        info_type.tag().Subqueries,
+        InfoTypeValue.SubqueriesMask{ .data = 31 },
+        subqueries_info.Subqueries,
     );
 
-    info_type = try con.getInfo(.SystemFunctions);
+    @memset(odbc_buf[0..], 0);
+    const system_functions_info = try con.getInfo(allocator, .SystemFunctions, odbc_buf[0..]);
+    defer system_functions_info.deinit(allocator);
     try expectEqual(
-        Tag.SystemFunctionsMask{ .data = 7 },
-        info_type.tag().SystemFunctions,
+        InfoTypeValue.SystemFunctionsMask{ .data = 7 },
+        system_functions_info.SystemFunctions,
     );
 
-    info_type = try con.getInfo(.TableTerm);
-    try expectEqualStrings("table", info_type.tag().TableTerm);
+    @memset(odbc_buf[0..], 0);
+    const table_term_info = try con.getInfo(allocator, .TableTerm, odbc_buf[0..]);
+    defer table_term_info.deinit(allocator);
+    try expectEqualStrings("table", table_term_info.TableTerm);
 
-    info_type = try con.getInfo(.TimedateAddIntervals);
+    @memset(odbc_buf[0..], 0);
+    const timedate_add_intervals_info = try con.getInfo(allocator, .TimedateAddIntervals, odbc_buf[0..]);
+    defer timedate_add_intervals_info.deinit(allocator);
     try expectEqual(
-        Tag.TimedateAddIntervalsMask{ .data = 511 },
-        info_type.tag().TimedateAddIntervals,
+        InfoTypeValue.TimedateAddIntervalsMask{ .data = 511 },
+        timedate_add_intervals_info.TimedateAddIntervals,
     );
 
-    info_type = try con.getInfo(.TimedateDiffIntervals);
+    @memset(odbc_buf[0..], 0);
+    const timedate_diff_intervals_info = try con.getInfo(allocator, .TimedateDiffIntervals, odbc_buf[0..]);
+    defer timedate_diff_intervals_info.deinit(allocator);
     try expectEqual(
-        Tag.TimedateDiffIntervalsMask{ .data = 511 },
-        info_type.tag().TimedateDiffIntervals,
+        InfoTypeValue.TimedateDiffIntervalsMask{ .data = 511 },
+        timedate_diff_intervals_info.TimedateDiffIntervals,
     );
 
-    info_type = try con.getInfo(.TimedateFunctions);
+    @memset(odbc_buf[0..], 0);
+    const timedate_functions_info = try con.getInfo(allocator, .TimedateFunctions, odbc_buf[0..]);
+    defer timedate_functions_info.deinit(allocator);
     try expectEqual(
-        Tag.TimedateFunctionsMask{ .data = 131071 },
-        info_type.tag().TimedateFunctions,
+        InfoTypeValue.TimedateFunctionsMask{ .data = 131071 },
+        timedate_functions_info.TimedateFunctions,
     );
 
-    info_type = try con.getInfo(.TxnCapable);
+    @memset(odbc_buf[0..], 0);
+    const txn_capable_info = try con.getInfo(allocator, .TxnCapable, odbc_buf[0..]);
+    defer txn_capable_info.deinit(allocator);
     try expectEqual(
-        Tag.TxnCapable.All,
-        info_type.tag().TxnCapable,
+        InfoTypeValue.TxnCapable.All,
+        txn_capable_info.TxnCapable,
     );
 
-    info_type = try con.getInfo(.TxnIsolationOption);
+    @memset(odbc_buf[0..], 0);
+    const txn_isolation_option_info = try con.getInfo(allocator, .TxnIsolationOption, odbc_buf[0..]);
+    defer txn_isolation_option_info.deinit(allocator);
     try expectEqual(
-        Tag.TxnIsolationOptionMask{ .data = 15 },
-        info_type.tag().TxnIsolationOption,
+        InfoTypeValue.TxnIsolationOptionMask{ .data = 15 },
+        txn_isolation_option_info.TxnIsolationOption,
     );
 
-    info_type = try con.getInfo(.Union);
+    @memset(odbc_buf[0..], 0);
+    const union_info = try con.getInfo(allocator, .Union, odbc_buf[0..]);
+    defer union_info.deinit(allocator);
     try expectEqual(
-        Tag.UnionMask{ .data = 3 },
-        info_type.tag().Union,
+        InfoTypeValue.UnionMask{ .data = 3 },
+        union_info.Union,
     );
 
-    info_type = try con.getInfo(.UserName);
-    try expectEqualStrings("db2inst1", info_type.tag().UserName);
+    @memset(odbc_buf[0..], 0);
+    const user_name_info = try con.getInfo(allocator, .UserName, odbc_buf[0..]);
+    defer user_name_info.deinit(allocator);
+    try expectEqualStrings("db2inst1", user_name_info.UserName);
 
-    // info_type = try con.getInfo(.XopenCliYear);
-    // try expectEqualStrings("", info_type.tag().XopenCliYear);
+    @memset(odbc_buf[0..], 0);
+    const xopen_cli_year_info = try con.getInfo(allocator, .XopenCliYear, odbc_buf[0..]);
+    defer xopen_cli_year_info.deinit(allocator);
+    try expectEqualStrings("1995", xopen_cli_year_info.XopenCliYear);
 }

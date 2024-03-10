@@ -31,17 +31,22 @@ pub fn getLastError(self: *const Self) sql.LastError {
     return self.handler.getLastError();
 }
 
-pub fn getInfo(self: Self, info_type: InfoType) !InfoTypeValue {
-    var value = InfoTypeValue{ .info_type = info_type };
+pub fn getInfo(
+    self: Self,
+    allocator: std.mem.Allocator,
+    info_type: InfoType,
+    odbc_buf: []u8,
+) !InfoTypeValue {
+    var str_len: i16 = undefined;
 
     return switch (sql.SQLGetInfo(
         self.handle(),
         info_type,
-        &value.buf,
-        value.buf.len,
-        &value.str_len,
+        odbc_buf.ptr,
+        @intCast(odbc_buf.len),
+        &str_len,
     )) {
-        .SUCCESS, .SUCCESS_WITH_INFO => value,
+        .SUCCESS, .SUCCESS_WITH_INFO => InfoTypeValue.init(allocator, info_type, odbc_buf, str_len),
         .ERR => {
             const lastError = self.getLastError();
             std.debug.print("lastError: {}\n", .{lastError});

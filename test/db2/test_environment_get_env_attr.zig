@@ -11,7 +11,7 @@ const attrs = zodbc.odbc.attributes;
 
 const AttributeValue = attrs.EnvironmentAttributeValue;
 
-test "getEnvAttr/1 retrieves the current setting for an environment attribute" {
+test "getEnvAttr/3 retrieves the current setting for an environment attribute" {
     const env = try zodbc.testing.environment();
     defer env.deinit();
 
@@ -66,7 +66,7 @@ test "getEnvAttr/1 retrieves the current setting for an environment attribute" {
     );
 }
 
-test "getEnvAttr/1 returns an for unsupported attributes" {
+test "getEnvAttr/3 returns an for unsupported attributes" {
     const env = try zodbc.testing.environment();
     defer env.deinit();
 

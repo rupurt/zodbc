@@ -10,7 +10,7 @@ const attrs = zodbc.odbc.attributes;
 
 const AttributeValue = attrs.EnvironmentAttributeValue;
 
-test "setEnvAttr/2 can modify settings that will be shared among connections" {
+test "setEnvAttr/1 can modify settings that will be shared among connections" {
     const env = try zodbc.testing.environment();
     defer env.deinit();
 
@@ -44,7 +44,7 @@ test "setEnvAttr/2 can modify settings that will be shared among connections" {
     );
 }
 
-test "setEnvAttr/2 returns an error for unixODBC attributes" {
+test "setEnvAttr/1 returns an error for unixODBC attributes" {
     const env = try zodbc.testing.environment();
     defer env.deinit();
 
@@ -71,7 +71,7 @@ test "setEnvAttr/2 returns an error for unixODBC attributes" {
 // `[unixODBC][Driver Manager]Optional feature not implemented`
 //
 // - https://www.ibm.com/docs/en/db2-for-zos/11?topic=functions-sqlsetenvattr-set-environment-attributes
-test "setEnvAttr/2 returns an error when null terminated output is false" {
+test "setEnvAttr/1 returns an error when null terminated output is false" {
     const env = try zodbc.testing.environment();
     defer env.deinit();
 
