@@ -12,7 +12,7 @@ const info = zodbc.odbc.info;
 const InfoTypeValue = info.InfoTypeValue;
 const Tag = info.InfoTypeValue.Tag;
 
-test ".getInfo/1 returns general information about the connected DBMS" {
+test "getInfo/1 returns general information about the connected DBMS" {
     const env_con = try zodbc.testing.connection();
     defer {
         env_con.con.deinit();

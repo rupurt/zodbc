@@ -9,7 +9,7 @@ const zodbc = @import("zodbc");
 const err = zodbc.errors;
 const types = zodbc.odbc.types;
 
-test ".describeCol/2 returns the column descriptions of a prepared statement" {
+test "describeCol/2 returns the column descriptions of a prepared statement" {
     const env_con = try zodbc.testing.connection();
     defer {
         env_con.con.deinit();
@@ -38,7 +38,7 @@ test ".describeCol/2 returns the column descriptions of a prepared statement" {
     try expect(col_desc.nullable >= 0);
 }
 
-test ".describeCol/2 returns an error when called on the bookmark column index 0" {
+test "describeCol/2 returns an error when called on the bookmark column index 0" {
     const env_con = try zodbc.testing.connection();
     defer {
         env_con.con.deinit();
@@ -60,7 +60,7 @@ test ".describeCol/2 returns an error when called on the bookmark column index 0
     );
 }
 
-test ".describeCol/2 returns an error when called out of sequence order" {
+test "describeCol/2 returns an error when called out of sequence order" {
     const env_con = try zodbc.testing.connection();
     defer {
         env_con.con.deinit();

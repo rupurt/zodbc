@@ -5,7 +5,7 @@ const allocator = testing.allocator;
 const zodbc = @import("zodbc");
 const types = zodbc.odbc.types;
 
-test ".columns/3 can return table columns" {
+test "columns/3 can return table columns" {
     const env_con = try zodbc.testing.connection();
     defer {
         env_con.con.deinit();

@@ -10,29 +10,57 @@ const attrs = zodbc.odbc.attributes;
 
 const AttributeValue = attrs.EnvironmentAttributeValue;
 
-test ".setEnvAttr/1 can modify settings that will be shared among connections" {
+test "setEnvAttr/2 can modify settings that will be shared among connections" {
     const env = try zodbc.testing.environment();
     defer env.deinit();
 
+    var odbc_buf: [256]u8 = undefined;
+
     try env.setEnvAttr(.{ .OdbcVersion = .V2 });
-    const odbc_version_attr = try env.getEnvAttr(.OdbcVersion);
+    @memset(odbc_buf[0..], 0);
+    const odbc_version_value = try env.getEnvAttr(allocator, .OdbcVersion, odbc_buf[0..]);
+    defer odbc_version_value.deinit(allocator);
     try expectEqual(
         AttributeValue.OdbcVersion.V2,
-        odbc_version_attr.OdbcVersion,
+        odbc_version_value.OdbcVersion,
     );
 
     try env.setEnvAttr(.{ .ConnectionPooling = .OnePerDriver });
-    const connection_pooling_attr = try env.getEnvAttr(.ConnectionPooling);
+    @memset(odbc_buf[0..], 0);
+    const connection_pooling_value = try env.getEnvAttr(allocator, .ConnectionPooling, odbc_buf[0..]);
+    defer connection_pooling_value.deinit(allocator);
     try expectEqual(
         AttributeValue.ConnectionPooling.OnePerDriver,
-        connection_pooling_attr.ConnectionPooling,
+        connection_pooling_value.ConnectionPooling,
     );
 
-    try env.setEnvAttr(.{ .CpMatch = .StrictMatch });
-    const cp_match_attr = try env.getEnvAttr(.CpMatch);
+    try env.setEnvAttr(.{ .CpMatch = .RelaxedMatch });
+    @memset(odbc_buf[0..], 0);
+    const cp_match_value = try env.getEnvAttr(allocator, .CpMatch, odbc_buf[0..]);
+    defer cp_match_value.deinit(allocator);
     try expectEqual(
-        AttributeValue.CpMatch.StrictMatch,
-        cp_match_attr.CpMatch,
+        AttributeValue.CpMatch.RelaxedMatch,
+        cp_match_value.CpMatch,
+    );
+}
+
+test "setEnvAttr/2 returns an error for unixODBC attributes" {
+    const env = try zodbc.testing.environment();
+    defer env.deinit();
+
+    try expectError(
+        err.SetEnvAttrError.Error,
+        env.setEnvAttr(.{ .UnixodbcSyspath = "/new/path" }),
+    );
+
+    try expectError(
+        err.SetEnvAttrError.Error,
+        env.setEnvAttr(.{ .UnixodbcVersion = "1234" }),
+    );
+
+    try expectError(
+        err.SetEnvAttrError.Error,
+        env.setEnvAttr(.{ .UnixodbcEnvattr = "FOO=BAR" }),
     );
 }
 
@@ -43,17 +71,20 @@ test ".setEnvAttr/1 can modify settings that will be shared among connections" {
 // `[unixODBC][Driver Manager]Optional feature not implemented`
 //
 // - https://www.ibm.com/docs/en/db2-for-zos/11?topic=functions-sqlsetenvattr-set-environment-attributes
-test ".setEnvAttr/1 returns an error when null terminated output is false" {
+test "setEnvAttr/2 returns an error when null terminated output is false" {
     const env = try zodbc.testing.environment();
     defer env.deinit();
 
-    var output_nts_attr: AttributeValue = undefined;
-    output_nts_attr = try env.getEnvAttr(.OutputNts);
-    try expectEqual(AttributeValue.OutputNts.True, output_nts_attr.OutputNts);
+    var odbc_buf: [256]u8 = undefined;
 
     try env.setEnvAttr(.{ .OutputNts = .True });
-    output_nts_attr = try env.getEnvAttr(.OutputNts);
-    try expectEqual(AttributeValue.OutputNts.True, output_nts_attr.OutputNts);
+    @memset(odbc_buf[0..], 0);
+    const output_nts_value = try env.getEnvAttr(allocator, .OutputNts, odbc_buf[0..]);
+    defer output_nts_value.deinit(allocator);
+    try expectEqual(
+        AttributeValue.OutputNts.True,
+        output_nts_value.OutputNts,
+    );
 
     try expectError(
         err.SetEnvAttrError.Error,

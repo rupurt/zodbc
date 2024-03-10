@@ -36,13 +36,15 @@ pub fn SQLGetEnvAttr(
     handle: ?*anyopaque,
     attribute: attrs.EnvironmentAttribute,
     value: *anyopaque,
+    buf_len: i32,
+    str_len: *i32,
 ) rc.GetEnvAttrRC {
     const return_code = c.SQLGetEnvAttr(
         handle,
         @intFromEnum(attribute),
         value,
-        0,
-        0,
+        buf_len,
+        str_len,
     );
     return @enumFromInt(return_code);
 }
@@ -51,12 +53,13 @@ pub fn SQLSetEnvAttr(
     handle: ?*anyopaque,
     attribute: attrs.EnvironmentAttribute,
     value: *allowzero anyopaque,
+    str_len: i32,
 ) rc.SetEnvAttrRC {
     const return_code = c.SQLSetEnvAttr(
         handle,
         @intFromEnum(attribute),
         value,
-        0,
+        str_len,
     );
     return @enumFromInt(return_code);
 }

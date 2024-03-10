@@ -1,5 +1,8 @@
 const std = @import("std");
 
+const mem = @import("mem.zig");
+const readInt = mem.readInt;
+
 pub const c = @cImport({
     @cInclude("sql.h");
     @cInclude("sqltypes.h");
@@ -18,18 +21,17 @@ pub const EnvironmentAttribute = enum(c_int) {
     ConnectionPooling = c.SQL_ATTR_CONNECTION_POOLING,
     CpMatch = c.SQL_ATTR_CP_MATCH,
     // unixODBC additions
-    // UNIXODBC_SYSPATH = c.SQL_ATTR_UNIXODBC_SYSPATH,
-    // UNIXODBC_VERSION = c.SQL_ATTR_UNIXODBC_VERSION,
-    // UNIXODBC_ENVATTR = c.SQL_ATTR_UNIXODBC_ENVATTR,
+    UnixodbcSyspath = c.SQL_ATTR_UNIXODBC_SYSPATH,
+    UnixodbcVersion = c.SQL_ATTR_UNIXODBC_VERSION,
+    UnixodbcEnvattr = c.SQL_ATTR_UNIXODBC_ENVATTR,
     // IBM Db2 specific additions
     // - https://www.ibm.com/docs/en/db2-for-zos/11?topic=functions-sqlsetenvattr-set-environment-attributes
-    // INFO_ACCTSTR = c.SQL_ATTR_INFO_ACCTSTR,
-    // INFO_APPLNAME = c.SQL_ATTR_INFO_APPLNAME,
-    // INFO_USERID = c.SQL_ATTR_INFO_USERID,
-    // INFO_WRKSTNNAME = c.SQL_ATTR_INFO_WRKSTNNAME,
-    // INFO_CONNECTTYPE = c.SQL_ATTR_INFO_CONNECTTYPE,
-    // INFO_MAXCONN = c.SQL_ATTR_INFO_MAXCONN,
-
+    // InfoAcctstr = c.SQL_ATTR_INFO_ACCTSTR,
+    // InfoApplname = c.SQL_ATTR_INFO_APPLNAME,
+    // InfoUserid = c.SQL_ATTR_INFO_USERID,
+    // InfoWrkstnname = c.SQL_ATTR_INFO_WRKSTNNAME,
+    // InfoConnecttype = c.SQL_ATTR_INFO_CONNECTTYPE,
+    // InfoMaxconn = c.SQL_ATTR_INFO_MAXCONN,
 };
 
 pub const EnvironmentAttributeValue = union(EnvironmentAttribute) {
@@ -37,26 +39,69 @@ pub const EnvironmentAttributeValue = union(EnvironmentAttribute) {
     OutputNts: OutputNts,
     ConnectionPooling: ConnectionPooling,
     CpMatch: CpMatch,
+    UnixodbcSyspath: []const u8,
+    UnixodbcVersion: []const u8,
+    UnixodbcEnvattr: []const u8,
 
-    pub fn fromAttribute(attr: EnvironmentAttribute, value: isize) EnvironmentAttributeValue {
+    pub fn init(
+        allocator: std.mem.Allocator,
+        attr: EnvironmentAttribute,
+        odbc_buf: []u8,
+        str_len: i32,
+    ) !EnvironmentAttributeValue {
         return switch (attr) {
-            .OdbcVersion => .{ .OdbcVersion = @enumFromInt(value) },
-            .OutputNts => .{ .OutputNts = @enumFromInt(value) },
-            .ConnectionPooling => .{ .ConnectionPooling = @enumFromInt(value) },
-            .CpMatch => .{ .CpMatch = @enumFromInt(value) },
+            .OdbcVersion => .{ .OdbcVersion = @enumFromInt(readInt(u32, odbc_buf)) },
+            .ConnectionPooling => .{ .ConnectionPooling = @enumFromInt(readInt(u32, odbc_buf)) },
+            .CpMatch => .{ .CpMatch = @enumFromInt(readInt(u32, odbc_buf)) },
+            .OutputNts => .{ .OutputNts = @enumFromInt(readInt(u32, odbc_buf)) },
+            .UnixodbcSyspath => {
+                const str = try allocator.alloc(u8, @intCast(str_len));
+                @memcpy(str, odbc_buf[0..@intCast(str_len)]);
+                return .{ .UnixodbcSyspath = str[0..] };
+            },
+            .UnixodbcVersion => {
+                const str = try allocator.alloc(u8, @intCast(str_len));
+                @memcpy(str, odbc_buf[0..@intCast(str_len)]);
+                return .{ .UnixodbcVersion = str[0..] };
+            },
+            .UnixodbcEnvattr => {
+                const str = try allocator.alloc(u8, @intCast(str_len));
+                @memcpy(str, odbc_buf[0..@intCast(str_len)]);
+                return .{ .UnixodbcEnvattr = str[0..] };
+            },
         };
     }
 
-    pub fn activeTag(self: EnvironmentAttributeValue) EnvironmentAttribute {
+    pub fn deinit(
+        self: EnvironmentAttributeValue,
+        allocator: std.mem.Allocator,
+    ) void {
+        return switch (self) {
+            .OdbcVersion, .ConnectionPooling, .CpMatch, .OutputNts => {},
+            .UnixodbcSyspath => |v| allocator.free(v),
+            .UnixodbcVersion => |v| allocator.free(v),
+            .UnixodbcEnvattr => |v| allocator.free(v),
+        };
+    }
+
+    pub fn getActiveTag(self: EnvironmentAttributeValue) EnvironmentAttribute {
         return std.meta.activeTag(self);
     }
 
-    pub fn getValue(self: EnvironmentAttributeValue) usize {
+    pub fn getValue(self: EnvironmentAttributeValue) *allowzero anyopaque {
         return switch (self) {
-            .OdbcVersion => |v| @as(usize, @intCast(@intFromEnum(v))),
-            .OutputNts => |v| @as(usize, @intCast(@intFromEnum(v))),
-            .ConnectionPooling => |v| @as(usize, @intCast(@intFromEnum(v))),
-            .CpMatch => |v| @as(usize, @intCast(@intFromEnum(v))),
+            .OdbcVersion => |v| @ptrFromInt(@as(usize, @intFromEnum(v))),
+            .ConnectionPooling => |v| @ptrFromInt(@as(usize, @intFromEnum(v))),
+            .CpMatch => |v| @ptrFromInt(@as(usize, @intFromEnum(v))),
+            .OutputNts => |v| @ptrFromInt(@as(usize, @intCast(@intFromEnum(v)))),
+            .UnixodbcSyspath, .UnixodbcVersion, .UnixodbcEnvattr => |v| @ptrCast(@constCast(v)),
+        };
+    }
+
+    pub fn getStrLen(self: EnvironmentAttributeValue) i32 {
+        return switch (self) {
+            .OdbcVersion, .OutputNts, .ConnectionPooling, .CpMatch => 0,
+            .UnixodbcSyspath, .UnixodbcVersion, .UnixodbcEnvattr => |v| @intCast(v.len),
         };
     }
 

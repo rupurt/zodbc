@@ -21,5 +21,7 @@ OPTIONS:
 SQL_ATTR_ODBC_VERSION=attributes.EnvironmentAttributeValue.OdbcVersion.V3
 SQL_ATTR_OUTPUT_NTS=attributes.EnvironmentAttributeValue.OutputNts.True
 SQL_ATTR_CONNECTION_POOLING=attributes.EnvironmentAttributeValue.ConnectionPooling.Off
-SQL_ATTR_CP_MATCH=attributes.EnvironmentAttributeValue.CpMatch.StrictMatch
+SQL_ATTR_CP_MATCH=attributes.EnvironmentAttributeValue.ConnectionPooling.Off
+SQL_ATTR_UNIXODBC_SYSPATH=/etc
+SQL_ATTR_UNIXODBC_VERSION=2.3.12
 ```

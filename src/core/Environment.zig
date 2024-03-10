@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 
 const errors = @import("errors.zig");
 const Handle = @import("Handle.zig");
@@ -37,15 +38,22 @@ pub fn getSQLCA(self: Self) !void {
     _ = self;
 }
 
-pub fn getEnvAttr(self: Self, attr: Attribute) !AttributeValue {
-    var value: i32 = undefined;
+pub fn getEnvAttr(
+    self: Self,
+    allocator: std.mem.Allocator,
+    attr: Attribute,
+    odbc_buf: []u8,
+) !AttributeValue {
+    var str_len: i32 = undefined;
 
     return switch (sql.SQLGetEnvAttr(
         self.handle(),
         attr,
-        &value,
+        odbc_buf.ptr,
+        @intCast(odbc_buf.len),
+        &str_len,
     )) {
-        .SUCCESS => AttributeValue.fromAttribute(attr, value),
+        .SUCCESS => AttributeValue.init(allocator, attr, odbc_buf, str_len),
         .ERR => {
             const lastError = self.getLastError();
             std.debug.print("lastError: {}\n", .{lastError});
@@ -55,11 +63,12 @@ pub fn getEnvAttr(self: Self, attr: Attribute) !AttributeValue {
     };
 }
 
-pub fn setEnvAttr(self: Self, attr: AttributeValue) !void {
+pub fn setEnvAttr(self: Self, attr_value: AttributeValue) !void {
     return switch (sql.SQLSetEnvAttr(
         self.handle(),
-        attr.activeTag(),
-        @ptrFromInt(attr.getValue()),
+        attr_value.getActiveTag(),
+        attr_value.getValue(),
+        attr_value.getStrLen(),
     )) {
         .SUCCESS => {},
         .ERR => {

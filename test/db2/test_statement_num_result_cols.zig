@@ -6,7 +6,7 @@ const zodbc = @import("zodbc");
 const err = zodbc.errors;
 const types = zodbc.odbc.types;
 
-test ".numResultCols/0 returns the number of columns for a prepared statement" {
+test "numResultCols/0 returns the number of columns for a prepared statement" {
     const env_con = try zodbc.testing.connection();
     defer {
         env_con.con.deinit();
@@ -24,7 +24,7 @@ test ".numResultCols/0 returns the number of columns for a prepared statement" {
     try testing.expect(num_result_cols > 0);
 }
 
-test ".numResultCols/0 returns an error when called out of sequence order" {
+test "numResultCols/0 returns an error when called out of sequence order" {
     const env_con = try zodbc.testing.connection();
     defer {
         env_con.con.deinit();

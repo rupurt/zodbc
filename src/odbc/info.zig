@@ -1,4 +1,6 @@
 const std = @import("std");
+const builtin = @import("builtin");
+const native_endian = builtin.target.cpu.arch.endian();
 
 pub const c = @cImport({
     @cInclude("sql.h");
@@ -945,5 +947,5 @@ fn strToBool(buf: [buf_len]u8, len: i16, expected: []const u8) bool {
 
 fn readInt(T: type, buf: [buf_len]u8, len: i16) T {
     const slice: []const u8 = buf[0..@intCast(len)];
-    return std.mem.readInt(T, @ptrCast(slice), .little);
+    return std.mem.readInt(T, @ptrCast(slice), native_endian);
 }

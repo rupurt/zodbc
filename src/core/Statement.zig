@@ -308,7 +308,7 @@ pub const FetchScrollError = error{
 };
 
 test ".init/1 returns an error when called without an established connection" {
-    const env = try Environment.init(.V3_80);
+    const env = try Environment.init(.V3);
     defer env.deinit();
     const con = try Connection.init(env);
     defer con.deinit();
