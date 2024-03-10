@@ -5,10 +5,13 @@ const Handle = @import("Handle.zig");
 
 const odbc = @import("odbc");
 const info = odbc.info;
+const attrs = odbc.attributes;
 const sql = odbc.sql;
 
 const InfoType = info.InfoType;
 const InfoTypeValue = info.InfoTypeValue;
+const Attribute = attrs.ConnectionAttribute;
+const AttributeValue = attrs.ConnectionAttributeValue;
 
 const Self = @This();
 
@@ -56,6 +59,52 @@ pub fn getInfo(
     };
 }
 
+pub fn getConnectAttr(
+    self: Self,
+    allocator: std.mem.Allocator,
+    attr: Attribute,
+    odbc_buf: []u8,
+) !AttributeValue {
+    var str_len: i32 = undefined;
+
+    return switch (sql.SQLGetConnectAttr(
+        self.handle(),
+        attr,
+        odbc_buf.ptr,
+        @intCast(odbc_buf.len),
+        &str_len,
+    )) {
+        .SUCCESS, .SUCCESS_WITH_INFO => AttributeValue.init(allocator, attr, odbc_buf, str_len),
+        .ERR => {
+            const lastError = self.getLastError();
+            std.debug.print("lastError: {}\n", .{lastError});
+            return GetConnectAttrError.Error;
+        },
+        .INVALID_HANDLE => GetConnectAttrError.InvalidHandle,
+        .NO_DATA => GetConnectAttrError.NoData,
+    };
+}
+
+pub fn setConnectAttr(
+    self: Self,
+    attr_value: AttributeValue,
+) !void {
+    return switch (sql.SQLSetConnectAttr(
+        self.handle(),
+        attr_value.getActiveTag(),
+        attr_value.getValue(),
+        attr_value.getStrLen(),
+    )) {
+        .SUCCESS => {},
+        .ERR => {
+            const lastError = self.getLastError();
+            std.debug.print("lastError: {}\n", .{lastError});
+            return SetConnectAttrError.Error;
+        },
+        .INVALID_HANDLE => SetConnectAttrError.InvalidHandle,
+    };
+}
+
 pub fn connectWithString(self: *const Self, dsn: []const u8) !void {
     return switch (sql.SQLDriverConnect(self.handle(), dsn)) {
         .SUCCESS, .SUCCESS_WITH_INFO => {},
@@ -80,6 +129,17 @@ pub const DriverConnectError = error{
 };
 
 pub const GetInfoError = error{
+    Error,
+    InvalidHandle,
+};
+
+pub const GetConnectAttrError = error{
+    Error,
+    InvalidHandle,
+    NoData,
+};
+
+pub const SetConnectAttrError = error{
     Error,
     InvalidHandle,
 };

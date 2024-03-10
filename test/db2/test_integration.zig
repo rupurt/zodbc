@@ -1,6 +1,8 @@
 comptime {
     _ = @import("test_environment_get_env_attr.zig");
     _ = @import("test_environment_set_env_attr.zig");
+    _ = @import("test_connection_get_connect_attr.zig");
+    _ = @import("test_connection_set_connect_attr.zig");
     _ = @import("test_connection_get_info.zig");
     _ = @import("test_statement_data_sources.zig");
     _ = @import("test_statement_tables.zig");

@@ -10,7 +10,6 @@ var dsn = zig_cli.Option{
     .required = true,
     .value_ref = zig_cli.mkRef(&config.dsn),
 };
-
 pub var cmd = zig_cli.Command{
     .name = "info",
     .options = &.{

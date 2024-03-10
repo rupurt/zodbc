@@ -10,7 +10,7 @@ const attrs = zodbc.odbc.attributes;
 
 const AttributeValue = attrs.EnvironmentAttributeValue;
 
-test "setEnvAttr/1 can modify settings that will be shared among connections" {
+test "setEnvAttr/1 can modify items that will be shared among connections" {
     const env = try zodbc.testing.environment();
     defer env.deinit();
 
@@ -44,7 +44,7 @@ test "setEnvAttr/1 can modify settings that will be shared among connections" {
     );
 }
 
-test "setEnvAttr/1 returns an error for unixODBC attributes" {
+test "setEnvAttr/1 returns an error for unixODBC items" {
     const env = try zodbc.testing.environment();
     defer env.deinit();
 

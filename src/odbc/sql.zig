@@ -51,13 +51,13 @@ pub fn SQLGetEnvAttr(
 
 pub fn SQLSetEnvAttr(
     handle: ?*anyopaque,
-    attribute: attrs.EnvironmentAttribute,
+    attr: attrs.EnvironmentAttribute,
     value: *allowzero anyopaque,
     str_len: i32,
 ) rc.SetEnvAttrRC {
     const return_code = c.SQLSetEnvAttr(
         handle,
-        @intFromEnum(attribute),
+        @intFromEnum(attr),
         value,
         str_len,
     );
@@ -76,6 +76,38 @@ pub fn SQLGetInfo(
         @intCast(@intFromEnum(info_type)),
         value,
         buf_len,
+        str_len,
+    );
+    return @enumFromInt(return_code);
+}
+
+pub fn SQLGetConnectAttr(
+    handle: ?*anyopaque,
+    attr: attrs.ConnectionAttribute,
+    value: *anyopaque,
+    buf_len: i32,
+    str_len: *i32,
+) rc.GetConnectAttrRC {
+    const return_code = c.SQLGetConnectAttr(
+        handle,
+        @intFromEnum(attr),
+        value,
+        buf_len,
+        str_len,
+    );
+    return @enumFromInt(return_code);
+}
+
+pub fn SQLSetConnectAttr(
+    handle: ?*anyopaque,
+    attr: attrs.ConnectionAttribute,
+    value: *allowzero anyopaque,
+    str_len: i32,
+) rc.SetConnectAttrRC {
+    const return_code = c.SQLSetConnectAttr(
+        handle,
+        @intFromEnum(attr),
+        value,
         str_len,
     );
     return @enumFromInt(return_code);
