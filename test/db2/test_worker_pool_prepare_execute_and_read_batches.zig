@@ -15,11 +15,13 @@ test "can execute a prepared statement and fetch a cursor" {
         .{ .n_workers = 2 },
     );
     defer pool.deinit();
+    const db2_driver = try std.process.getEnvVarOwned(allocator, "DB2_DRIVER");
+    defer allocator.free(db2_driver);
     const con_str = try std.fmt.allocPrint(
         allocator,
         "Driver={s};Hostname={s};Database={s};Port={d};Uid={s};Pwd={s};",
         .{
-            std.os.getenv("DB2_DRIVER") orelse "",
+            db2_driver,
             "localhost",
             "testdb",
             50_000,

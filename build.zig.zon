@@ -3,10 +3,10 @@
     .version = "0.0.0",
     .minimum_zig_version = "0.12.0",
     .dependencies = .{
-      .@"zig-cli" = .{
-        .url = "https://github.com/sam701/zig-cli/archive/50201f0086da689cd104c2fef350f3dbe894eea7.tar.gz",
-        .hash = "12208a4377c7699927605e5a797bad5ae2ba8be4b49f68b9f522b3a755597a21f1cf",
-      },
+        .@"zig-cli" = .{
+            .url = "https://github.com/sam701/zig-cli/archive/beff935fe77a0ed794e8727d48e7780485abb880.tar.gz",
+            .hash = "122092c8a98897c6e0946f39930ce7b48162bd62400834104c95c871f53887377aa7",
+        },
     },
     .paths = .{
         "build.zig",

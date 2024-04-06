@@ -23,11 +23,13 @@ pub fn connectionWithEnv(env: Environment) !Connection {
 }
 
 pub fn db2ConnectionString(allocator: std.mem.Allocator) ![]const u8 {
+    const db2_driver = try std.process.getEnvVarOwned(allocator, "DB2_DRIVER");
+    defer allocator.free(db2_driver);
     return try std.fmt.allocPrint(
         allocator,
         "Driver={s};Hostname={s};Database={s};Port={d};Uid={s};Pwd={s};",
         .{
-            std.os.getenv("DB2_DRIVER") orelse "",
+            db2_driver,
             "localhost",
             "testdb",
             50_000,

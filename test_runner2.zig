@@ -105,7 +105,7 @@ pub fn main() !void {
     if (leak > 0) {
         printer.status(.fail, "{d} test{s} leaked\n", .{ leak, if (leak != 1) "s" else "" });
     }
-    std.os.exit(if (fail == 0) 0 else 1);
+    std.posix.exit(if (fail == 0) 0 else 1);
 }
 
 const Printer = struct {
