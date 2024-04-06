@@ -2,7 +2,7 @@ const std = @import("std");
 const zig_cli = @import("zig-cli");
 
 pub var cmd = zig_cli.Command{
-    .name = "benchmark",
+    .name = "load",
     .target = zig_cli.CommandTarget{
         .action = zig_cli.CommandAction{
             .exec = run,

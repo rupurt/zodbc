@@ -11,6 +11,8 @@ USAGE:
 
 COMMANDS:
   sql
+  dump
+  load
   tables
   table-privileges
   columns
@@ -53,6 +55,8 @@ OPTIONS:
 - [Usage](#usage)
 - [Commands](./docs/commands)
     - [sql](./docs/commands/sql)
+    - [dump](./docs/commands/dump)
+    - [load](./docs/commands/load)
     - [tables](./docs/commands/tables)
     - [table-privileges](./docs/commands/table_privileges)
     - [columns](./docs/commands/columns)

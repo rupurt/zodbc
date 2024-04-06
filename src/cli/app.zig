@@ -1,6 +1,8 @@
 const std = @import("std");
 const zig_cli = @import("zig-cli");
 const sql = @import("cmd/sql.zig");
+const dump = @import("cmd/dump.zig");
+const load = @import("cmd/load.zig");
 const tables = @import("cmd/tables.zig");
 const table_privileges = @import("cmd/table_privileges.zig");
 const columns = @import("cmd/columns.zig");
@@ -23,6 +25,8 @@ pub var app = &zig_cli.App{
         .target = zig_cli.CommandTarget{
             .subcommands = &.{
                 &sql.cmd,
+                &dump.cmd,
+                &load.cmd,
                 &tables.cmd,
                 &table_privileges.cmd,
                 &columns.cmd,
