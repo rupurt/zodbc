@@ -106,7 +106,7 @@ pub fn build(b: *std.Build) void {
     // ----------------------------
     const lib_core_unit_tests = b.addTest(.{
         .name = "[LIB CORE UNIT]",
-        .test_runner = "test_runner.zig",
+        .test_runner = .{ .path = "test_runner.zig" },
         .root_source_file = .{ .path = "src/core/test_unit.zig" },
         .target = target,
         .optimize = optimize,
@@ -118,7 +118,7 @@ pub fn build(b: *std.Build) void {
 
     const lib_pool_unit_tests = b.addTest(.{
         .name = "[LIB POOL UNIT]",
-        .test_runner = "test_runner.zig",
+        .test_runner = .{ .path = "test_runner.zig" },
         .root_source_file = .{ .path = "src/pool/test_unit.zig" },
         .target = target,
         .optimize = optimize,
@@ -130,7 +130,7 @@ pub fn build(b: *std.Build) void {
 
     const lib_unit_tests = b.addTest(.{
         .name = "[LIB UNIT]",
-        .test_runner = "test_runner.zig",
+        .test_runner = .{ .path = "test_runner.zig" },
         .root_source_file = .{ .path = "src/lib.zig" },
         .target = target,
         .optimize = optimize,
@@ -141,7 +141,7 @@ pub fn build(b: *std.Build) void {
 
     const exe_unit_tests = b.addTest(.{
         .name = "[EXE UNIT]",
-        .test_runner = "test_runner.zig",
+        .test_runner = .{ .path = "test_runner.zig" },
         .root_source_file = .{ .path = "src/main.zig" },
         .target = target,
         .optimize = optimize,
@@ -157,7 +157,7 @@ pub fn build(b: *std.Build) void {
     // Db2 integration tests
     const db2_integration_tests = b.addTest(.{
         .name = "[DB2 INTEGRATION]",
-        .test_runner = "test_runner.zig",
+        .test_runner = .{ .path = "test_runner.zig" },
         .root_source_file = .{ .path = "test/db2/test_integration.zig" },
         .target = target,
         .optimize = optimize,
@@ -173,7 +173,7 @@ pub fn build(b: *std.Build) void {
     // MariaDB integration tests
     const mariadb_integration_tests = b.addTest(.{
         .name = "[MARIADB INTEGRATION]",
-        .test_runner = "test_runner.zig",
+        .test_runner = .{ .path = "test_runner.zig" },
         .root_source_file = .{ .path = "test/mariadb/test_integration.zig" },
         .target = target,
         .optimize = optimize,
@@ -189,7 +189,7 @@ pub fn build(b: *std.Build) void {
     // Postgres integration tests
     const postgres_integration_tests = b.addTest(.{
         .name = "[POSTGRES INTEGRATION]",
-        .test_runner = "test_runner.zig",
+        .test_runner = .{ .path = "test_runner.zig" },
         .root_source_file = .{ .path = "test/postgres/test_integration.zig" },
         .target = target,
         .optimize = optimize,
