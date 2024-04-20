@@ -35,11 +35,6 @@
         overlays = [
           zig-overlay.overlays.default
           odbc-drivers.overlay
-          # WebUI fails to build on Linux with unexported symbol
-          # - emcc: error: undefined exported symbol: "__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE9__grow_byEmmmmmm" [-Wundefined] [-Werror]
-          # (final: prev: {
-          #   tree-sitter = prev.tree-sitter.override {webUISupport = true;};
-          # })
         ];
       };
       db2Driver =
